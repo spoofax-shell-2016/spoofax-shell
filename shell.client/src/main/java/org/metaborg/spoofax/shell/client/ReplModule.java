@@ -29,12 +29,13 @@ public class ReplModule extends AbstractModule {
         bind(TerminalUserInterface.class).in(Singleton.class);
         bind(IEditor.class).to(TerminalUserInterface.class);
         bind(IDisplay.class).to(TerminalUserInterface.class);
+//      bind(IDisplay.class).to(Window.class);
 
         bind(InputStream.class).annotatedWith(Names.named("in")).toInstance(System.in);
         bind(OutputStream.class).annotatedWith(Names.named("out")).toInstance(System.out);
         bind(OutputStream.class).annotatedWith(Names.named("err")).toInstance(System.err);
 
-        bind(new TypeLiteral<Consumer<String>>() { }).annotatedWith(Names.named("onSuccess"))
+        bind(new TypeLiteral<Consumer<ColoredString>>() { }).annotatedWith(Names.named("onSuccess"))
             .to(OnEvalSuccessHook.class).in(Singleton.class);
         bind(new TypeLiteral<Consumer<String>>() { }).annotatedWith(Names.named("onError"))
             .to(OnEvalErrorHook.class).in(Singleton.class);

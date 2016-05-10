@@ -42,7 +42,7 @@ public interface IEditor {
      * @param promptString
      *            The prompt string.
      */
-	void setPrompt(String promptString);
+	void setPrompt(ColoredString promptString);
 
     /**
      * Set the prompt to display when in multi-line mode.
@@ -50,6 +50,6 @@ public interface IEditor {
      * @param promptString
      *            The prompt string.
      */
-	void setContinuationPrompt(String promptString);
+	void setContinuationPrompt(ColoredString promptString);
 
 }

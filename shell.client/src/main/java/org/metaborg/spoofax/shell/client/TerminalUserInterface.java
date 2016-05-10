@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.fusesource.jansi.Ansi;
-import org.fusesource.jansi.Ansi.Color;
 import org.metaborg.core.completion.ICompletionService;
 import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -28,8 +28,8 @@ import jline.console.ConsoleReader;
  */
 public class TerminalUserInterface implements IEditor, IDisplay {
     private ConsoleReader reader;
-    private String prompt;
-    private String continuationPrompt;
+    private ColoredString prompt;
+    private ColoredString continuationPrompt;
     private ArrayList<String> lines;
     private PrintWriter out;
     private PrintWriter err;
@@ -58,14 +58,13 @@ public class TerminalUserInterface implements IEditor, IDisplay {
             new PrintWriter(new BufferedWriter(new OutputStreamWriter(err,
                                                                       Charset.forName("UTF-8"))));
 
-        setPrompt(coloredFg(Color.RED, "[In ]: "));
-        setContinuationPrompt("[...]: ");
-
-        lines = new ArrayList<>();
+        lines = Lists.newArrayList();
     }
 
-    private String coloredFg(Color c, String s) {
-        return Ansi.ansi().fg(c).a(s).reset().toString();
+    private String ansi(ColoredString string) {
+        return string.getStrings().stream()
+        .map(e -> Ansi.ansi().fg(e.getAnsiColor()).a(e.getString()).toString())
+        .collect(Collectors.joining());
     }
 
     /**
@@ -80,12 +79,12 @@ public class TerminalUserInterface implements IEditor, IDisplay {
 
     // -------------- IEditor --------------
     @Override
-    public void setPrompt(String promptString) {
+    public void setPrompt(ColoredString promptString) {
         prompt = promptString;
     }
 
     @Override
-    public void setContinuationPrompt(String promptString) {
+    public void setContinuationPrompt(ColoredString promptString) {
         continuationPrompt = promptString;
     }
 
@@ -100,15 +99,15 @@ public class TerminalUserInterface implements IEditor, IDisplay {
     public String getInput() throws IOException {
         String input;
         String lastLine;
-        reader.setPrompt(prompt);
+        reader.setPrompt(ansi(prompt));
         // While the input is not empty, keep asking.
         while ((lastLine = reader.readLine()) != null && lastLine.trim().length() > 0) {
             reader.flush();
-            reader.setPrompt(continuationPrompt);
+            reader.setPrompt(ansi(continuationPrompt));
             saveLine(lastLine);
         }
         // Concat the strings with newlines inbetween
-        input = lines.stream().reduce((left, right) -> left + "\n" + right).orElse("");
+        input = lines.stream().collect(Collectors.joining("\n"));
         // Clear the lines for next input.
         lines.clear();
         return input;
@@ -125,8 +124,8 @@ public class TerminalUserInterface implements IEditor, IDisplay {
 
     // -------------- IDisplay --------------
     @Override
-    public void displayResult(String s) {
-        out.println(s);
+    public void displayResult(ColoredString string) {
+        out.println(ansi(string));
         out.flush();
     }
 

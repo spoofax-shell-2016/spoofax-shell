@@ -10,7 +10,7 @@ public interface IDisplay {
      * Display a result string.
      * @param s The string to be displayed.
      */
-    void displayResult(String s);
+    void displayResult(ColoredString s);
 
     /**
      * Display an error string.
