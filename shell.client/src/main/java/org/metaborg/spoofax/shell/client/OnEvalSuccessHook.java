@@ -7,7 +7,7 @@ import com.google.inject.Inject;
 /**
  * Called upon success of an evaluation command.
  */
-class OnEvalSuccessHook implements Consumer<String> {
+class OnEvalSuccessHook implements Consumer<ColoredString> {
     private IDisplay display;
 
     /**
@@ -19,7 +19,7 @@ class OnEvalSuccessHook implements Consumer<String> {
     }
 
     @Override
-    public void accept(String s) {
+    public void accept(ColoredString s) {
         display.displayResult(s);
     }
 }

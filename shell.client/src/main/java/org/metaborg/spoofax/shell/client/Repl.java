@@ -1,8 +1,6 @@
 package org.metaborg.spoofax.shell.client;
 
-import java.io.IOException;
-
-import org.fusesource.jansi.Ansi;
+import org.fusesource.jansi.Ansi.Color;
 import org.metaborg.spoofax.shell.commands.CommandNotFoundException;
 import org.metaborg.spoofax.shell.commands.ICommandInvoker;
 import org.metaborg.spoofax.shell.commands.IReplCommand;
@@ -11,6 +9,8 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
+
+import java.io.IOException;
 
 /**
  * Interactive REPL (Read-Eval-Print Loop) which reads an expression or command typed in by the user
@@ -43,6 +43,9 @@ public final class Repl {
         this.editor = editor;
         this.display = display;
         this.invoker = invoker;
+
+        editor.setPrompt(new ColoredString("[In ]: "));
+        editor.setContinuationPrompt(new ColoredString("[...]: "));
     }
 
     /**
@@ -52,8 +55,8 @@ public final class Repl {
      *             when an IO error occurs.
      */
     public void run() throws IOException {
-        display.displayResult(Ansi.ansi().a("Welcome to the ").bold().a("Spoofax").reset()
-            .a(" REPL").toString());
+        display.displayResult(new ColoredString(Color.BLUE, "Welcome to the ")
+                .append(Color.RED, "Spoofax").append(Color.BLUE, " REPL"));
 
         String input;
         running = true;
