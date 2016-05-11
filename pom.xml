@@ -14,7 +14,7 @@
             <dependency>
                 <groupId>org.metaborg</groupId>
                 <artifactId>org.metaborg.spoofax.core</artifactId>
-                <version>2.0.0-SNAPSHOT</version>
+                <version>2.0.0-beta1</version>
             </dependency>
 
             <!-- Test dependencies. -->
@@ -327,12 +327,12 @@
     <repositories>
         <repository>
             <id>metaborg-snapshot-repo</id>
-            <url>http://artifacts.metaborg.org/content/repositories/snapshots/</url>
+            <url>http://artifacts.metaborg.org/content/repositories/releases/</url>
             <releases>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
             </snapshots>
         </repository>
     </repositories>
