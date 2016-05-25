@@ -1,4 +1,4 @@
-package org.metaborg.spoofax.shell.client.console;
+package org.metaborg.spoofax.shell.client.console.history;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -14,6 +14,10 @@ import java.util.function.Supplier;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
+import org.metaborg.spoofax.shell.client.console.TerminalUserInterface;
+import org.metaborg.spoofax.shell.client.console.TerminalUserInterfaceTest;
+import org.metaborg.spoofax.shell.client.console.UserInputSimulationModule;
+import org.metaborg.spoofax.shell.client.console.history.JLine2InputHistory;
 import org.metaborg.spoofax.shell.core.StyledText;
 import org.mockito.Mockito;
 
