@@ -13,6 +13,7 @@
     <modules>
         <!-- The Eclipse plugin cannot be build in the same reactor build, see:
              https://wiki.eclipse.org/Tycho/How_Tos/Dependency_on_pom-first_artifacts -->
+        <module>org.metaborg.spoofax.shell.eclipse.externaldeps</module>
         <module>org.metaborg.spoofax.shell.console</module>
         <module>org.metaborg.spoofax.shell.core</module>
     </modules>
