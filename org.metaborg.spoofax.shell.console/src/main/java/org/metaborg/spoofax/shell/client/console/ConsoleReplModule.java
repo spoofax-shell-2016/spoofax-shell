@@ -6,6 +6,7 @@ import java.io.OutputStream;
 
 import org.metaborg.spoofax.shell.client.IDisplay;
 import org.metaborg.spoofax.shell.client.IEditor;
+import org.metaborg.spoofax.shell.client.IInputHistory;
 import org.metaborg.spoofax.shell.client.Repl;
 import org.metaborg.spoofax.shell.client.ReplModule;
 import org.metaborg.spoofax.shell.client.console.history.JLine2InputHistory;
@@ -24,6 +25,7 @@ import com.google.inject.name.Names;
 public class ConsoleReplModule extends ReplModule {
 
     private void configureUserInterface() {
+        bind(IInputHistory.class).to(JLine2InputHistory.class);
         bind(JLine2InputHistory.class).to(JLine2PersistentInputHistory.class);
         bind(ColorStrategy.class).to(AnsiStrategy.class);
 

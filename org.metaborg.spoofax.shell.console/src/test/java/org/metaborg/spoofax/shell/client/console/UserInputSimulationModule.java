@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.metaborg.spoofax.shell.client.IInputHistory;
+import org.metaborg.spoofax.shell.client.console.history.JLine2InputHistory;
 import org.metaborg.spoofax.shell.client.console.strategy.AnsiStrategy;
 import org.metaborg.spoofax.shell.client.console.strategy.ColorStrategy;
 
@@ -42,6 +44,7 @@ public class UserInputSimulationModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(ColorStrategy.class).to(AnsiStrategy.class);
+        bind(IInputHistory.class).to(JLine2InputHistory.class);
         bind(ConsoleReader.class).toInstance(reader);
         bind(InputStream.class).annotatedWith(Names.named("in")).toInstance(in);
         bind(OutputStream.class).annotatedWith(Names.named("out")).toInstance(out);
