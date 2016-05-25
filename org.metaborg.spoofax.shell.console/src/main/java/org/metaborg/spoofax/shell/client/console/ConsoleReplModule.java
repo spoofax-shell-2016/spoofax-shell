@@ -24,7 +24,10 @@ import com.google.inject.name.Names;
  */
 public class ConsoleReplModule extends ReplModule {
 
-    private void configureUserInterface() {
+    /**
+     * Bind implementation classes to provide a user interface.
+     */
+    protected void configureUserInterface() {
         bind(IInputHistory.class).to(JLine2InputHistory.class);
         bind(JLine2InputHistory.class).to(JLine2PersistentInputHistory.class);
         bind(ColorStrategy.class).to(AnsiStrategy.class);
