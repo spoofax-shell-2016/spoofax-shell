@@ -10,6 +10,8 @@ import org.metaborg.spoofax.shell.client.Repl;
 import org.metaborg.spoofax.shell.client.ReplModule;
 import org.metaborg.spoofax.shell.client.console.history.JLine2InputHistory;
 import org.metaborg.spoofax.shell.client.console.history.JLine2PersistentInputHistory;
+import org.metaborg.spoofax.shell.client.console.strategy.AnsiStrategy;
+import org.metaborg.spoofax.shell.client.console.strategy.ColorStrategy;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -23,6 +25,7 @@ public class ConsoleReplModule extends ReplModule {
 
     private void configureUserInterface() {
         bind(JLine2InputHistory.class).to(JLine2PersistentInputHistory.class);
+        bind(ColorStrategy.class).to(AnsiStrategy.class);
 
         bind(TerminalUserInterface.class).in(Singleton.class);
         bind(IEditor.class).to(TerminalUserInterface.class);

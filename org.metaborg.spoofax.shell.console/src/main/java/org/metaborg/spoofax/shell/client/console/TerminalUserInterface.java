@@ -1,7 +1,5 @@
 package org.metaborg.spoofax.shell.client.console;
 
-import static org.metaborg.spoofax.shell.client.console.AnsiColors.findClosest;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -12,12 +10,12 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-import org.fusesource.jansi.Ansi;
 import org.metaborg.core.completion.ICompletionService;
 import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
 import org.metaborg.spoofax.shell.client.IDisplay;
 import org.metaborg.spoofax.shell.client.IEditor;
 import org.metaborg.spoofax.shell.client.console.history.JLine2InputHistory;
+import org.metaborg.spoofax.shell.client.console.strategy.ColorStrategy;
 import org.metaborg.spoofax.shell.core.StyledText;
 
 import com.google.inject.Inject;
@@ -34,6 +32,7 @@ public class TerminalUserInterface implements IEditor, IDisplay {
     private final PrintWriter out;
     private final PrintWriter err;
     private final JLine2InputHistory hist;
+    private final ColorStrategy strategy;
     private StyledText prompt;
     private StyledText continuationPrompt;
 
@@ -46,15 +45,19 @@ public class TerminalUserInterface implements IEditor, IDisplay {
      *            The {@link PrintStream} to write errors to.
      * @param hist
      *            The input history adapter for JLine2.
+     * @param strategy
+     *            The coloring strategy to use.
      * @throws IOException
      *             When an IO error occurs.
      */
     @Inject
     public TerminalUserInterface(ConsoleReader reader, @Named("out") OutputStream out,
-                                 @Named("err") OutputStream err, JLine2InputHistory hist)
+                                 @Named("err") OutputStream err, JLine2InputHistory hist,
+                                 ColorStrategy strategy)
                                      throws IOException {
         this.reader = reader;
         this.hist = hist;
+        this.strategy = strategy;
         reader.setExpandEvents(false);
         reader.setHandleUserInterrupt(true);
         reader.setBellEnabled(true);
@@ -100,11 +103,11 @@ public class TerminalUserInterface implements IEditor, IDisplay {
     public String getInput() throws IOException {
         String input;
         String lastLine;
-        reader.setPrompt(ansi(prompt));
+        reader.setPrompt(strategy.style(prompt));
         // While the input is not empty, keep asking.
         while ((lastLine = reader.readLine()) != null && lastLine.trim().length() > 0) {
             reader.flush();
-            reader.setPrompt(ansi(continuationPrompt));
+            reader.setPrompt(strategy.style(continuationPrompt));
             saveLine(lastLine);
         }
         // Concatenate the strings with newlines in between.
@@ -122,26 +125,13 @@ public class TerminalUserInterface implements IEditor, IDisplay {
     // -------------- IDisplay --------------
     @Override
     public void displayResult(StyledText s) {
-        out.println(ansi(s));
+        out.println(strategy.style(s));
         out.flush();
     }
 
     @Override
     public void displayError(StyledText s) {
-        err.println(ansi(s));
+        err.println(strategy.style(s));
         err.flush();
-    }
-
-    private String ansi(StyledText text) {
-        Ansi ansi = Ansi.ansi();
-        text.getSource().stream()
-        .forEach(e -> {
-            if (e.style() != null && e.style().color() != null) {
-                ansi.fg(findClosest(e.style().color())).a(e.fragment()).reset();
-            } else {
-                ansi.a(e.fragment());
-            }
-        });
-        return ansi.toString();
     }
 }

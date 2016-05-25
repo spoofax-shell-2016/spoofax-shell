@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.metaborg.spoofax.shell.client.console.TerminalUserInterface;
 import org.metaborg.spoofax.shell.client.console.TerminalUserInterfaceTest;
 import org.metaborg.spoofax.shell.client.console.UserInputSimulationModule;
-import org.metaborg.spoofax.shell.client.console.history.JLine2InputHistory;
 import org.metaborg.spoofax.shell.core.StyledText;
 import org.mockito.Mockito;
 
