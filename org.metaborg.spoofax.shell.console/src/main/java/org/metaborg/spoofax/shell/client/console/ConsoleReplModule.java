@@ -4,11 +4,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.metaborg.core.context.IContext;
 import org.metaborg.spoofax.shell.client.IDisplay;
 import org.metaborg.spoofax.shell.client.IEditor;
+import org.metaborg.spoofax.shell.client.IInputHistory;
 import org.metaborg.spoofax.shell.client.Repl;
 import org.metaborg.spoofax.shell.client.ReplModule;
+import org.metaborg.spoofax.shell.client.console.history.JLine2InputHistory;
+import org.metaborg.spoofax.shell.client.console.history.JLine2PersistentInputHistory;
+import org.metaborg.spoofax.shell.client.console.strategy.AnsiStrategy;
+import org.metaborg.spoofax.shell.client.console.strategy.ColorStrategy;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -21,17 +25,12 @@ import com.google.inject.name.Names;
 public class ConsoleReplModule extends ReplModule {
 
     /**
-     * Instantiates a new ConsoleReplModule.
-     *
-     * @param context
-     *            The {@link IContext} in which the REPL operates.
+     * Bind implementation classes to provide a user interface.
      */
-    public ConsoleReplModule(IContext context) {
-        super(context);
-    }
-
-    private void configureUserInterface() {
+    protected void configureUserInterface() {
+        bind(IInputHistory.class).to(JLine2InputHistory.class);
         bind(JLine2InputHistory.class).to(JLine2PersistentInputHistory.class);
+        bind(ColorStrategy.class).to(AnsiStrategy.class);
 
         bind(TerminalUserInterface.class).in(Singleton.class);
         bind(IEditor.class).to(TerminalUserInterface.class);
