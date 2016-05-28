@@ -110,8 +110,18 @@ public class TerminalUserInterface implements IEditor, IDisplay {
     }
 
     @Override
+    public StyledText getPrompt() {
+        return this.prompt;
+    }
+
+    @Override
     public void setContinuationPrompt(StyledText promptString) {
         continuationPrompt = promptString;
+    }
+
+    @Override
+    public StyledText getContinuationPrompt() {
+        return this.continuationPrompt;
     }
 
     @Override

@@ -26,12 +26,26 @@ public interface IEditor {
     void setPrompt(StyledText promptString);
 
     /**
+     * Returns the prompt used by this EclipseEditor.
+     *
+     * @return The prompt used by this EclipseEditor.
+     */
+    StyledText getPrompt();
+
+    /**
      * Set the prompt to display when in multiline mode.
      *
      * @param promptString
      *            The prompt string.
      */
     void setContinuationPrompt(StyledText promptString);
+
+    /**
+     * Returns the continuation prompt used by this EclipseEditor.
+     *
+     * @return The continuation prompt used by this EclipseEditor.
+     */
+    StyledText getContinuationPrompt();
 
     /**
      * Set the completion service to be used when hitting TAB.
