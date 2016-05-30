@@ -7,11 +7,12 @@ import java.io.OutputStream;
 import org.metaborg.spoofax.shell.client.console.IDisplay;
 import org.metaborg.spoofax.shell.client.console.IEditor;
 import org.metaborg.spoofax.shell.client.console.IInputHistory;
+import org.metaborg.spoofax.shell.client.console.commands.ExitCommand;
 import org.metaborg.spoofax.shell.client.console.impl.history.JLine2InputHistory;
 import org.metaborg.spoofax.shell.client.console.impl.history.JLine2PersistentInputHistory;
 import org.metaborg.spoofax.shell.client.console.impl.hooks.ConsoleMessageHook;
 import org.metaborg.spoofax.shell.client.console.impl.hooks.ConsoleResultHook;
-import org.metaborg.spoofax.shell.core.Repl;
+import org.metaborg.spoofax.shell.core.IRepl;
 import org.metaborg.spoofax.shell.core.ReplModule;
 import org.metaborg.spoofax.shell.hooks.IMessageHook;
 import org.metaborg.spoofax.shell.hooks.IResultHook;
@@ -26,11 +27,17 @@ import com.google.inject.name.Names;
  */
 public class ConsoleReplModule extends ReplModule {
 
+    @Override
+    protected void configureCommands() {
+        super.configureCommands();
+        commandBinder.addBinding("exit").to(ExitCommand.class).in(Singleton.class);
+    }
+
     /**
      * Binds the user interface implementations.
      */
     protected void configureUserInterface() {
-        bind(Repl.class).to(ConsoleRepl.class);
+        bind(IRepl.class).to(ConsoleRepl.class);
         bind(ConsoleRepl.class).in(Singleton.class);
         bind(IInputHistory.class).to(JLine2InputHistory.class);
         bind(JLine2InputHistory.class).to(JLine2PersistentInputHistory.class);

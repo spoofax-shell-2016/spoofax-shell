@@ -9,10 +9,11 @@ import org.metaborg.core.project.SimpleProjectService;
 import org.metaborg.core.resource.IResourceService;
 import org.metaborg.core.resource.ResourceService;
 import org.metaborg.spoofax.core.SpoofaxModule;
-import org.metaborg.spoofax.shell.commands.ExitCommand;
 import org.metaborg.spoofax.shell.commands.HelpCommand;
 import org.metaborg.spoofax.shell.commands.IReplCommand;
 import org.metaborg.spoofax.shell.commands.LanguageCommand;
+import org.metaborg.spoofax.shell.hooks.IMessageHook;
+import org.metaborg.spoofax.shell.hooks.IResultHook;
 import org.metaborg.spoofax.shell.invoker.ICommandFactory;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
 import org.metaborg.spoofax.shell.invoker.SpoofaxCommandInvoker;
@@ -25,9 +26,11 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.MapBinder;
 
 /**
- * Client library bindings.
+ * This class binds the core classes. It is intended to be subclassed by client implementations.
+ * These subclasses should bind their implementations of {@link IRepl}, {@link IMessageHook} and
+ * {@link IResultHook}.
  */
-public class ReplModule extends SpoofaxModule {
+public abstract class ReplModule extends SpoofaxModule {
 
     protected MapBinder<String, IReplCommand> commandBinder;
 
@@ -36,7 +39,6 @@ public class ReplModule extends SpoofaxModule {
      */
     protected void configureCommands() {
         commandBinder = MapBinder.newMapBinder(binder(), String.class, IReplCommand.class);
-        commandBinder.addBinding("exit").to(ExitCommand.class).in(Singleton.class);
         commandBinder.addBinding("help").to(HelpCommand.class).in(Singleton.class);
         commandBinder.addBinding("load").to(LanguageCommand.class).in(Singleton.class);
 
