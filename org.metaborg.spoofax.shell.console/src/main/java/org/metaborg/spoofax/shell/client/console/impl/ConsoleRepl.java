@@ -54,16 +54,6 @@ public class ConsoleRepl implements IRepl {
         this.running = running;
     }
 
-    private String read() {
-        String input = null;
-        try {
-            input = editor.getInput();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return input;
-    }
-
     /**
      * Run {@code eval(read())} in a loop, for as long as {@code running} is {@code true}.
      *
@@ -82,7 +72,7 @@ public class ConsoleRepl implements IRepl {
 
             String input;
             setRunning(true);
-            while (running && (input = read()) != null) {
+            while (running && (input = editor.getInput()) != null) {
                 try {
                     eval(input);
                 } catch (CommandNotFoundException | MetaborgException e) {

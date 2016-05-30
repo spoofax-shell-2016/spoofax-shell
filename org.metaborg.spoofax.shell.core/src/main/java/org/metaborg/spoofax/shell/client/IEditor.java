@@ -1,9 +1,8 @@
 package org.metaborg.spoofax.shell.client;
 
-import java.io.IOException;
-
 import org.metaborg.core.completion.ICompletionService;
 import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
+import org.metaborg.spoofax.shell.output.StyledText;
 
 /**
  * An {@link IEditor} is where expressions in some language can be typed. It takes care of
@@ -15,10 +14,24 @@ public interface IEditor {
      * Get the input from the user, optionally spanning multiple lines.
      *
      * @return The input typed in by the user.
-     * @throws IOException
-     *             When an IO error occurs.
      */
-    String getInput() throws IOException;
+    String getInput();
+
+    /**
+     * Set the prompt to display.
+     *
+     * @param promptString
+     *            The prompt string.
+     */
+    void setPrompt(StyledText promptString);
+
+    /**
+     * Set the prompt to display when in multiline mode.
+     *
+     * @param promptString
+     *            The prompt string.
+     */
+    void setContinuationPrompt(StyledText promptString);
 
     /**
      * Set the completion service to be used when hitting TAB.
