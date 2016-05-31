@@ -11,10 +11,8 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.fusesource.jansi.Ansi;
@@ -24,7 +22,6 @@ import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
 import org.metaborg.spoofax.shell.client.IDisplay;
 import org.metaborg.spoofax.shell.client.IEditor;
 import org.metaborg.spoofax.shell.client.IInputHistory;
-import org.metaborg.spoofax.shell.client.console.AnsiColors;
 import org.metaborg.spoofax.shell.output.StyledText;
 
 import com.google.inject.Inject;
@@ -166,7 +163,7 @@ public class TerminalUserInterface implements IEditor, IDisplay {
         String text = styled.toString();
 
         Ansi ansi = Ansi.ansi();
-        styled.getSource().stream().forEach(e -> {
+        styled.getSource().forEach(e -> {
             String fragment = text.substring(e.region().startOffset(), e.region().endOffset() + 1);
 
             if (e.style() != null) {
