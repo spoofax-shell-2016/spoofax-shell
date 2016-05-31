@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import org.fusesource.jansi.Ansi;
 import org.metaborg.core.completion.ICompletionService;
-import org.metaborg.core.source.ISourceRegion;
 import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
 import org.metaborg.spoofax.shell.client.IDisplay;
 import org.metaborg.spoofax.shell.client.IEditor;

@@ -142,6 +142,10 @@ public class StyledText {
         return new Style(fg, bg, false, false, false);
     }
 
+    private static <T> boolean equals(T a, T b) {
+        return a == b || a != null && a.equals(b) || b != null && b.equals(a);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof StyledText)) {
@@ -158,10 +162,7 @@ public class StyledText {
                 IRegionStyle<IStrategoTerm> s = source.get(e);
                 IRegionStyle<IStrategoTerm> o = other.source.get(e);
 
-                return s.fragment().equals(o.fragment())
-                        && (s.style() == o.style()
-                            || s.style() != null && s.style().equals(o.style())
-                            || o.style() != null && o.style().equals(s.style()));
+                return equals(s.style(), o.style()) && equals(s.fragment(), o.fragment());
             })
             .allMatch(e -> e);
     }
