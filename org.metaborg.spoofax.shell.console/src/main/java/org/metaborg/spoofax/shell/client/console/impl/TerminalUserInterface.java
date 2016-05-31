@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.fusesource.jansi.Ansi;
 import org.metaborg.core.completion.ICompletionService;
+import org.metaborg.core.source.ISourceRegion;
 import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
 import org.metaborg.spoofax.shell.client.IDisplay;
 import org.metaborg.spoofax.shell.client.IEditor;
@@ -149,13 +150,17 @@ public class TerminalUserInterface implements IEditor, IDisplay {
         err.flush();
     }
 
-    private String ansi(StyledText text) {
+    private String ansi(StyledText styled) {
+        String text = styled.toString();
+
         Ansi ansi = Ansi.ansi();
-        text.getSource().stream().forEach(e -> {
+        styled.getSource().stream().forEach(e -> {
+            String fragment = text.substring(e.region().startOffset(), e.region().endOffset() + 1);
+
             if (e.style() != null && e.style().color() != null) {
-                ansi.fg(AnsiColors.findClosest(e.style().color())).a(e.fragment()).reset();
+                ansi.fg(AnsiColors.findClosest(e.style().color())).a(fragment).reset();
             } else {
-                ansi.a(e.fragment());
+                ansi.a(fragment);
             }
         });
         return ansi.toString();

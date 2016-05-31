@@ -29,7 +29,7 @@ public class StyledText {
      *            The unstyled text.
      */
     public StyledText(String text) {
-        this(new Style(null, null, false, false, false), text);
+        this(defaultStyle(), text);
     }
 
     /**
@@ -41,7 +41,7 @@ public class StyledText {
      *            The unstyled text.
      */
     public StyledText(Color color, String text) {
-        this(new Style(color, null, false, false, false), text);
+        this(colorStyle(color, null), text);
     }
 
     /**
@@ -52,8 +52,10 @@ public class StyledText {
      * @param text
      *            The unstyled text.
      */
-    public StyledText(Style style, String text) {
+    public StyledText(IStyle style, String text) {
         this.source = Lists.newArrayList();
+        this.textBuffer = new StringBuffer();
+
         this.append(style, text);
     }
 
@@ -110,7 +112,7 @@ public class StyledText {
      * @return The styled text.
      */
     public StyledText append(IStyle style, String text) {
-        int start = this.textBuffer.length() - 1;
+        int start = this.textBuffer.length();
         return this.append(new SourceRegion(start, start + text.length() - 1), style, text);
     }
 
@@ -128,14 +130,15 @@ public class StyledText {
     private StyledText append(ISourceRegion region, IStyle style, String text) {
         this.source.add(new RegionStyle<>(region, style, null));
         this.textBuffer.append(text);
+
         return this;
     }
 
-    private IStyle defaultStyle() {
+    private static IStyle defaultStyle() {
         return colorStyle(null, null);
     }
 
-    private IStyle colorStyle(Color fg, Color bg) {
+    private static IStyle colorStyle(Color fg, Color bg) {
         return new Style(fg, bg, false, false, false);
     }
 
