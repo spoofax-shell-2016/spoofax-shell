@@ -14,11 +14,13 @@ import org.metaborg.spoofax.shell.client.console.impl.hooks.ConsoleMessageHook;
 import org.metaborg.spoofax.shell.client.console.impl.hooks.ConsoleResultHook;
 import org.metaborg.spoofax.shell.client.hooks.IMessageHook;
 import org.metaborg.spoofax.shell.client.hooks.IResultHook;
+import org.metaborg.spoofax.shell.commands.IReplCommand;
 import org.metaborg.spoofax.shell.core.IRepl;
 import org.metaborg.spoofax.shell.core.ReplModule;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
@@ -28,8 +30,8 @@ import com.google.inject.name.Names;
 public class ConsoleReplModule extends ReplModule {
 
     @Override
-    protected void configureCommands() {
-        super.configureCommands();
+    protected void bindCommands(MapBinder<String, IReplCommand> commandBinder) {
+        super.bindCommands(commandBinder);
         commandBinder.addBinding("exit").to(ExitCommand.class).in(Singleton.class);
     }
 

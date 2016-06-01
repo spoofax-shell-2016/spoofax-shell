@@ -32,17 +32,27 @@ import com.google.inject.multibindings.MapBinder;
  */
 public abstract class ReplModule extends SpoofaxModule {
 
-    protected MapBinder<String, IReplCommand> commandBinder;
-
     /**
      * Binds the default commands.
+     *
+     * @param commandBinder
+     *            The {@link MapBinder} for binding the commands to their names.
      */
-    protected void configureCommands() {
-        commandBinder = MapBinder.newMapBinder(binder(), String.class, IReplCommand.class);
+    protected void bindCommands(MapBinder<String, IReplCommand> commandBinder) {
         commandBinder.addBinding("help").to(HelpCommand.class).in(Singleton.class);
         commandBinder.addBinding("load").to(LanguageCommand.class).in(Singleton.class);
 
         bind(ICommandInvoker.class).to(SpoofaxCommandInvoker.class);
+    }
+
+    /**
+     * Binds the evaluation strategies.
+     *
+     * @param evalStrategyBinder
+     *            The {@link MapBinder} for binding the strategies to their names.
+     */
+    protected void bindEvalStrategies(MapBinder<String, IEvaluationStrategy> evalStrategyBinder) {
+        evalStrategyBinder.addBinding("dynsem").to(DynSemEvaluationStrategy.class);
     }
 
     @Override
@@ -56,7 +66,12 @@ public abstract class ReplModule extends SpoofaxModule {
     protected void configure() {
         super.configure();
 
-        configureCommands();
+        MapBinder<String, IReplCommand> commandBinder =
+            MapBinder.newMapBinder(binder(), String.class, IReplCommand.class);
+        MapBinder<String, IEvaluationStrategy> evalStrategyBinder =
+            MapBinder.newMapBinder(binder(), String.class, IEvaluationStrategy.class);
+        bindCommands(commandBinder);
+        bindEvalStrategies(evalStrategyBinder);
 
         install(new FactoryModuleBuilder().build(ICommandFactory.class));
         install(new FactoryModuleBuilder().build(IResultFactory.class));
@@ -64,8 +79,11 @@ public abstract class ReplModule extends SpoofaxModule {
 
     /**
      * FIXME: hardcoded project returned here.
-     * @param resourceService the Spoofax {@link ResourceService}
-     * @param projectService the Spoofax {@link ISimpleProjectService}
+     *
+     * @param resourceService
+     *            the Spoofax {@link ResourceService}
+     * @param projectService
+     *            the Spoofax {@link ISimpleProjectService}
      * @return an {@link IProject}
      * @throws MetaborgException when creating a project failed
      */
