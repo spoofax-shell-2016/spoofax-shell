@@ -67,7 +67,17 @@ public class EclipseRepl implements IRepl, Observer<IEditor> {
     private void appendInputToDisplay(IEditor editor, String input) {
         // TODO: handle multiline input: every string after '\n' should be prepended with the
         // continuationPrompt.
-        display.displayResult(new StyledText(editor.getPrompt() + " " + input));
+        String[] split = input.split("\n");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < split.length; i++) {
+            if (i == 0) {
+                sb.append(editor.getPrompt() + " " + split[i]);
+            } else {
+                sb.append("\n" + editor.getContinuationPrompt() + " " + split[i]);
+            }
+        }
+        sb.append("\n");
+        display.displayResult(new StyledText(sb.toString()));
     }
 
     private void runAsJob(final String input) {

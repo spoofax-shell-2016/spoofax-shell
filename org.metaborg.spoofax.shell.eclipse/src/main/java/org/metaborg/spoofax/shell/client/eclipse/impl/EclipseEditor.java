@@ -6,6 +6,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
@@ -33,7 +36,7 @@ import rx.Subscriber;
  * History is automatically maintained through {@link EclipseHistory}. The regular Eclipse
  * keybindings apply in the {@link Text} widget.
  */
-public class EclipseEditor extends KeyAdapter implements IEditor {
+public class EclipseEditor extends KeyAdapter implements IEditor, ModifyListener {
     private final Text input;
     private Subscriber<? super IEditor> observer;
     private StyledText prompt;
@@ -48,11 +51,37 @@ public class EclipseEditor extends KeyAdapter implements IEditor {
      */
     @Inject
     public EclipseEditor(Composite parent) {
-        this.input = new Text(parent, SWT.SINGLE);
+        this.input = new Text(parent, SWT.MULTI | SWT.LEFT | SWT.BORDER);
         this.input.addKeyListener(this);
+        this.input.addModifyListener(this);
+        resetLines();
 
         this.setPrompt(new StyledText(Color.GREEN, "==> "));
         this.setContinuationPrompt(new StyledText("... "));
+    }
+
+    private void resetLines() {
+        int lineHeight = this.input.getLineHeight();
+        Rectangle bounds = this.input.getBounds();
+        this.input.setSize(bounds.width, lineHeight);
+        this.input.getParent().layout(true, true);
+    }
+
+    private void addLine() {
+        int lineHeight = this.input.getLineHeight();
+        Rectangle bounds = this.input.getBounds();
+        this.input.setSize(bounds.width, bounds.height + lineHeight);
+        this.input.getParent().layout(true, true);
+    }
+
+    private void removeLine() {
+        System.out.println("removeLine");
+        int lineHeight = this.input.getLineHeight();
+        Rectangle bounds = this.input.getBounds();
+        if (this.input.getLineCount() > 1) {
+            this.input.setSize(bounds.width, bounds.height - lineHeight);
+            this.input.getParent().layout(true, true);
+        }
     }
 
     private void clear() {
@@ -120,10 +149,38 @@ public class EclipseEditor extends KeyAdapter implements IEditor {
 
     @Override
     public void keyPressed(KeyEvent event) {
-        if (event.keyCode == SWT.CR || event.keyCode == SWT.LF) {
-            observer.onNext(this);
-            clear();
+        switch (event.keyCode) {
+        case SWT.CR: // fallthrough
+        case SWT.LF:
+            if ((event.stateMask & SWT.SHIFT) != 0) {
+                addLine();
+            } else {
+                observer.onNext(this);
+                clear();
+                resetLines();
+            }
+            break;
+        case SWT.BS:
+            System.out.println("Backspace");
+            if (this.input.getCaretPosition() == 0
+                && this.input.getCaretLineNumber() == 0) {
+                System.out.println("Removing line");
+                removeLine();
+            }
+            break;
+        case SWT.ARROW_DOWN:
+            System.out.println("Arrow down to line " + this.input.getCaretLineNumber());
+            break;
+        case SWT.ARROW_UP:
+            System.out.println("Arrow up to line " + this.input.getCaretLineNumber());
+            break;
+        default:
         }
+    }
+
+    @Override
+    public void modifyText(ModifyEvent event) {
+        // TODO: text has been modified, send it to get syntax highlighting.
     }
 
 }

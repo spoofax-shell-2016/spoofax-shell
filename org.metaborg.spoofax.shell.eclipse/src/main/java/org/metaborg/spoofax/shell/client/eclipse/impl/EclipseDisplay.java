@@ -8,6 +8,7 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.console.TextConsoleViewer;
 import org.metaborg.spoofax.shell.client.IDisplay;
+import org.metaborg.spoofax.shell.client.eclipse.Activator;
 import org.metaborg.spoofax.shell.output.StyledText;
 
 import com.google.inject.Inject;
@@ -30,8 +31,12 @@ public class EclipseDisplay implements IDisplay {
      */
     @Inject
     public EclipseDisplay(Composite parent) {
-        MessageConsole console = new MessageConsole("Spoofax REPL Console", null);
+        MessageConsole console = new MessageConsole("Spoofax REPL Console",
+                                                    Activator.getImageDescriptor("icons/icon.gif"));
         this.viewer = new TextConsoleViewer(parent, console);
+        this.viewer.setEditable(false);
+        this.viewer.getTextWidget().setAlwaysShowScrollBars(false);
+
         this.out = console.newMessageStream();
         this.err = console.newMessageStream();
         // TODO: when StyledText can be translated to color understood by Eclipse, this should go.
@@ -49,6 +54,9 @@ public class EclipseDisplay implements IDisplay {
 
     @Override
     public void displayResult(StyledText message) {
+        // TextPresentation p =
+        // StyleUtils.createTextPresentation(message.getSource(), Display.getCurrent());
+        // this.viewer.changeTextPresentation(p, true);
         this.out.println(message.toString());
     }
 

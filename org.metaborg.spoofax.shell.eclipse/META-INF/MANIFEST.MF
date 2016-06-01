@@ -14,7 +14,10 @@ Require-Bundle: org.eclipse.core.jobs;bundle-version="3.7.0",
  org.metaborg.spoofax.core;bundle-version="2.0.0",
  org.metaborg.spoofax.eclipse;bundle-version="2.0.0",
  org.metaborg.spoofax.eclipse.externaldeps;bundle-version="2.0.0",
- org.metaborg.spoofax.shell.core;bundle-version="0.0.3"
+ org.metaborg.spoofax.shell.core;bundle-version="0.0.3",
+ org.eclipse.ui.editors,
+ org.metaborg.spoofax.eclipse.util,
+ org.spoofax.terms;bundle-version="2.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: metaborg.org
 Export-Package: org.metaborg.spoofax.shell.client.eclipse
