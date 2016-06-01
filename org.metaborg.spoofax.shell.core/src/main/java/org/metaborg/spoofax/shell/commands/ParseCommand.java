@@ -2,6 +2,7 @@ package org.metaborg.spoofax.shell.commands;
 
 import java.io.IOException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.language.ILanguageImpl;
@@ -66,8 +67,11 @@ public class ParseCommand extends SpoofaxCommand {
         ISpoofaxParseUnit parse = syntaxService.parse(unit.unit());
         ParseResult result = resultFactory.createParseResult(parse);
         if (!result.valid()) {
-            throw new MetaborgException(result.messages().stream().map(IMessage::message)
-                .collect(Collectors.joining("\n")));
+            String collect = Stream.concat(Stream.of("Parse messages:"),
+                                           result.messages().stream().map(IMessage::message))
+                    .collect(Collectors.joining("\n"));
+            throw new MetaborgException(collect);
+
         }
         return result;
     }

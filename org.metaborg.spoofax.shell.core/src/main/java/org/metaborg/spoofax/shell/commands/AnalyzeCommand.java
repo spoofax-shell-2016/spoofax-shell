@@ -2,6 +2,7 @@ package org.metaborg.spoofax.shell.commands;
 
 import java.io.IOException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.analysis.IAnalysisService;
@@ -86,8 +87,10 @@ public class AnalyzeCommand extends SpoofaxCommand {
         AnalyzeResult result = resultFactory.createAnalyzeResult(analyze);
 
         if (!result.valid()) {
-            throw new MetaborgException(result.messages().stream().map(IMessage::message)
-                .collect(Collectors.joining("\n")));
+            String collect = Stream.concat(Stream.of("Analyze messages:"),
+                                           result.messages().stream().map(IMessage::message))
+                    .collect(Collectors.joining("\n"));
+            throw new MetaborgException(collect);
         }
         return result;
     }
