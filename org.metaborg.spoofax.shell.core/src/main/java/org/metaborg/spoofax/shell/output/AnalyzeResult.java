@@ -63,7 +63,7 @@ public class AnalyzeResult extends AbstractSpoofaxResult<ISpoofaxAnalyzeUnit> {
     @SuppressWarnings("CPD-END")
     @Override
     public boolean valid() {
-        return unit().valid();
+        return unit().valid() && unit().success();
     }
 
 }

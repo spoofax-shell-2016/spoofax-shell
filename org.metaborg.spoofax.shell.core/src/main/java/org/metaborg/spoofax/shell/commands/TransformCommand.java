@@ -18,6 +18,7 @@ import org.metaborg.core.menu.IMenuItem;
 import org.metaborg.core.menu.IMenuItemVisitor;
 import org.metaborg.core.menu.IMenuService;
 import org.metaborg.core.menu.Separator;
+import org.metaborg.core.messages.IMessage;
 import org.metaborg.core.project.IProject;
 import org.metaborg.spoofax.core.menu.MenuService;
 import org.metaborg.spoofax.core.transform.ISpoofaxTransformService;
@@ -141,7 +142,11 @@ public class TransformCommand extends SpoofaxCommand implements IMenuItemVisitor
         TransformResult result = strat.transform(context, unit, goal);
 
         if (!result.valid()) {
-            throw new MetaborgException("Invalid transform result!");
+            String collect = Stream.concat(Stream.of("Transform messages:"),
+                                           result.messages().stream().map(IMessage::message))
+                    .collect(Collectors.joining("\n"));
+            throw new MetaborgException(collect);
+
         }
         return result;
     }

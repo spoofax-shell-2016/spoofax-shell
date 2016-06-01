@@ -88,6 +88,7 @@ public class ParseResultTest {
     @Test
     public void testValid() {
         when(unit.valid()).thenReturn(true);
+        when(unit.success()).thenReturn(true);
 
         assertTrue(parseResult.valid());
     }
@@ -98,6 +99,7 @@ public class ParseResultTest {
     @Test
     public void testInvalid() {
         when(unit.valid()).thenReturn(false);
+        when(unit.success()).thenReturn(false);
 
         assertFalse(parseResult.valid());
     }

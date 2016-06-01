@@ -81,6 +81,7 @@ public class AnalyzeResultTest {
     @Test
     public void testValidStyled() {
         when(unit.valid()).thenReturn(true);
+        when(unit.success()).thenReturn(true);
 
         assertEquals(new StyledText(ACTUAL), analyzeResult.styled());
     }
@@ -91,6 +92,7 @@ public class AnalyzeResultTest {
     @Test
     public void testInvalidStyled() {
         when(unit.valid()).thenReturn(false);
+        when(unit.success()).thenReturn(false);
 
         assertEquals(new StyledText(messages.toString()), analyzeResult.styled());
     }
@@ -101,6 +103,7 @@ public class AnalyzeResultTest {
     @Test
     public void testValid() {
         when(unit.valid()).thenReturn(true);
+        when(unit.success()).thenReturn(true);
 
         assertTrue(analyzeResult.valid());
     }
