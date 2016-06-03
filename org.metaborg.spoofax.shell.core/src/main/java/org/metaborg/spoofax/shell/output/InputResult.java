@@ -59,6 +59,11 @@ public class InputResult extends AbstractSpoofaxResult<ISpoofaxInputUnit> {
     }
 
     @Override
+    public ISpoofaxInputUnit input() {
+        return unit();
+    }
+
+    @Override
     public List<IMessage> messages() {
         return Lists.newArrayList();
     }

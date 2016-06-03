@@ -9,6 +9,7 @@ import org.metaborg.core.context.IContext;
 import org.metaborg.core.messages.IMessage;
 import org.metaborg.spoofax.core.stratego.IStrategoCommon;
 import org.metaborg.spoofax.core.unit.ISpoofaxAnalyzeUnit;
+import org.metaborg.spoofax.core.unit.ISpoofaxInputUnit;
 import org.metaborg.spoofax.shell.commands.SpoofaxCommand;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
@@ -43,6 +44,11 @@ public class AnalyzeResult extends AbstractSpoofaxResult<ISpoofaxAnalyzeUnit> {
     @Override
     public Optional<IContext> context() {
         return Optional.of(unit().context());
+    }
+
+    @Override
+    public ISpoofaxInputUnit input() {
+        return unit().input().input();
     }
 
     @Override

@@ -7,28 +7,29 @@ import java.util.stream.StreamSupport;
 
 import org.metaborg.core.context.IContext;
 import org.metaborg.core.messages.IMessage;
+import org.metaborg.core.unit.IUnit;
 import org.metaborg.spoofax.core.stratego.IStrategoCommon;
 import org.metaborg.spoofax.core.unit.ISpoofaxTransformUnit;
 import org.metaborg.spoofax.shell.commands.SpoofaxCommand;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 
 /**
- * Represents a {@link TransformResult} as returned by the {@link SpoofaxCommand}.
+ * Represents a {@link AbstractTransformResult} as returned by the {@link SpoofaxCommand}.
  * Wraps a {@link ISpoofaxTransformUnit}.
+ * @param <T> the wrapped subtype contained in the {@link ISpoofaxTransformUnit}
  */
-public class TransformResult extends AbstractSpoofaxResult<ISpoofaxTransformUnit<?>> {
+public abstract class AbstractTransformResult<T extends IUnit>
+	extends AbstractSpoofaxResult<ISpoofaxTransformUnit<T>> {
 
     /**
-     * Create a {@link TransformResult}.
+     * Create a {@link AbstractTransformResult}.
      * @param common  the {@link IStrategoCommon} service
      * @param unit    the wrapped {@link ISpoofaxTransformUnit}
      */
-    @AssistedInject
-    public TransformResult(IStrategoCommon common,
-                           @Assisted ISpoofaxTransformUnit<?> unit) {
+    public AbstractTransformResult(IStrategoCommon common,
+                           @Assisted ISpoofaxTransformUnit<T> unit) {
         super(common, unit);
     }
 

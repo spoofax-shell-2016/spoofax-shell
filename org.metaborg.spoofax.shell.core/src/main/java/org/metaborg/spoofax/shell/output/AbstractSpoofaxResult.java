@@ -7,7 +7,7 @@ import org.metaborg.spoofax.shell.commands.SpoofaxCommand;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 /**
- * Represents an {@link AbstractResult} as returned by the {@link SpoofaxCommand}.
+ * Represents an {@link AbstractSpoofaxResult} as returned by the {@link SpoofaxCommand}.
  * Wraps Spoofax {@link IUnit} of various types.
  * @param <T> the wrapped subtype of {@link IUnit}
  */
@@ -16,7 +16,7 @@ public abstract class AbstractSpoofaxResult<T extends IUnit> implements ISpoofax
     private T unit;
 
     /**
-     * Constructor for an {@link AbstractResult}.
+     * Constructor for an {@link AbstractSpoofaxResult}.
      * @param common  the {@link IStrategoCommon} service
      * @param unit    the wrapped {@link IUnit}
      */

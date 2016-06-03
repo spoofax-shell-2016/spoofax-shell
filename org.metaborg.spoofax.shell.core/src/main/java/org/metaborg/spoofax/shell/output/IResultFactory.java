@@ -37,6 +37,13 @@ public interface IResultFactory {
     ParseResult createParseResult(ISpoofaxParseUnit unit);
 
     /**
+     * Create a {@link ParseTransformResult} that can be passed to the Repl.
+     * @param unit  the wrapped {@link ISpoofaxTransformUnit}
+     * @return a {@link ParseTransformResult}
+     */
+    ParseTransformResult createParseTransformResult(ISpoofaxTransformUnit<ISpoofaxParseUnit> unit);
+
+    /**
      * Create an {@link AnalyzeResult} that can be passed to the Repl.
      * @param unit  the wrapped {@link ISpoofaxAnalyzeUnit}
      * @return an {@link AnalyzeResult}
@@ -44,10 +51,11 @@ public interface IResultFactory {
     AnalyzeResult createAnalyzeResult(ISpoofaxAnalyzeUnit unit);
 
     /**
-     * Create a {@link TransformResult} that can be passed to the Repl.
+     * Create a {@link AbstractTransformResult} that can be passed to the Repl.
      * @param unit  the wrapped {@link ISpoofaxTransformUnit}
-     * @return a {@link TransformResult}
+     * @return a {@link AbstractTransformResult}
      */
-    TransformResult createTransformResult(ISpoofaxTransformUnit<?> unit);
+    AnalyzeTransformResult createAnalyzeTransformResult(
+            ISpoofaxTransformUnit<ISpoofaxAnalyzeUnit> unit);
 
 }

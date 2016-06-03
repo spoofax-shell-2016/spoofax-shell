@@ -26,11 +26,13 @@ import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
 import org.metaborg.spoofax.core.unit.ISpoofaxTransformUnit;
 import org.metaborg.spoofax.shell.hooks.IResultHook;
 import org.metaborg.spoofax.shell.invoker.ICommandFactory;
+import org.metaborg.spoofax.shell.output.AbstractTransformResult;
 import org.metaborg.spoofax.shell.output.AnalyzeResult;
+import org.metaborg.spoofax.shell.output.AnalyzeTransformResult;
 import org.metaborg.spoofax.shell.output.IResultFactory;
 import org.metaborg.spoofax.shell.output.InputResult;
 import org.metaborg.spoofax.shell.output.ParseResult;
-import org.metaborg.spoofax.shell.output.TransformResult;
+import org.metaborg.spoofax.shell.output.ParseTransformResult;
 
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -54,19 +56,19 @@ public class TransformCommand extends SpoofaxCommand implements IMenuItemVisitor
     /**
      */
     private interface Strategy {
-        TransformResult transform(IContext context, ParseResult unit, ITransformGoal goal)
-                throws MetaborgException;
+        AbstractTransformResult<?> transform(IContext context, ParseResult unit,
+                ITransformGoal goal) throws MetaborgException;
     }
 
     /**
      */
     private class Parsed implements Strategy {
         @Override
-        public TransformResult transform(IContext context, ParseResult unit, ITransformGoal goal)
-                throws MetaborgException {
+        public ParseTransformResult transform(IContext context, ParseResult unit,
+                ITransformGoal goal) throws MetaborgException {
             Collection<ISpoofaxTransformUnit<ISpoofaxParseUnit>> transform =
                     transformService.transform(unit.unit(), context, goal);
-            return resultFactory.createTransformResult(transform.iterator().next());
+            return resultFactory.createParseTransformResult(transform.iterator().next());
         }
     }
 
@@ -74,12 +76,12 @@ public class TransformCommand extends SpoofaxCommand implements IMenuItemVisitor
      */
     private class Analyzed implements Strategy {
         @Override
-        public TransformResult transform(IContext context, ParseResult unit, ITransformGoal goal)
-                throws MetaborgException {
+        public AnalyzeTransformResult transform(IContext context, ParseResult unit,
+                ITransformGoal goal) throws MetaborgException {
             AnalyzeResult analyze = analyzeCommand.analyze(unit);
             Collection<ISpoofaxTransformUnit<ISpoofaxAnalyzeUnit>> transform =
                     transformService.transform(analyze.unit(), context, goal);
-            return resultFactory.createTransformResult(transform.iterator().next());
+            return resultFactory.createAnalyzeTransformResult(transform.iterator().next());
         }
     }
 
@@ -135,10 +137,10 @@ public class TransformCommand extends SpoofaxCommand implements IMenuItemVisitor
                      .collect(Collectors.joining("\n- "));
     }
 
-    private TransformResult transform(Strategy strat, ParseResult unit, ITransformGoal goal)
-            throws MetaborgException {
+    private AbstractTransformResult<?> transform(Strategy strat, ParseResult unit,
+            ITransformGoal goal) throws MetaborgException {
         IContext context = unit.context().orElse(contextService.get(unit.source(), project, lang));
-        TransformResult result = strat.transform(context, unit, goal);
+        AbstractTransformResult<?> result = strat.transform(context, unit, goal);
 
         if (!result.valid()) {
             throw new MetaborgException("Invalid transform result!");

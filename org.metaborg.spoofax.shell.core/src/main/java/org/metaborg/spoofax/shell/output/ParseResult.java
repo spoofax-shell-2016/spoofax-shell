@@ -8,6 +8,7 @@ import java.util.stream.StreamSupport;
 import org.metaborg.core.context.IContext;
 import org.metaborg.core.messages.IMessage;
 import org.metaborg.spoofax.core.stratego.IStrategoCommon;
+import org.metaborg.spoofax.core.unit.ISpoofaxInputUnit;
 import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
 import org.metaborg.spoofax.shell.commands.SpoofaxCommand;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -40,6 +41,11 @@ public class ParseResult extends AbstractSpoofaxResult<ISpoofaxParseUnit> {
     @Override
     public Optional<IContext> context() {
         return Optional.empty();
+    }
+
+    @Override
+    public ISpoofaxInputUnit input() {
+        return unit().input();
     }
 
     @Override
