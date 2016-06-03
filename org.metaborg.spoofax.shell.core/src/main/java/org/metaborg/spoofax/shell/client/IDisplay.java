@@ -1,5 +1,6 @@
 package org.metaborg.spoofax.shell.client;
 
+import org.metaborg.spoofax.shell.output.ISpoofaxResult;
 import org.metaborg.spoofax.shell.output.StyledText;
 
 /**
@@ -10,14 +11,18 @@ public interface IDisplay {
 
     /**
      * Display a result string with a style.
-     * @param s The string to be displayed.
+     *
+     * @param result
+     *            The result to be displayed.
      */
-    void displayResult(StyledText s);
+    void displayResult(ISpoofaxResult<?> result);
 
     /**
      * Display an error string with a style.
-     * @param s The string to be displayed.
+     *
+     * @param message
+     *            The message to be displayed.
      */
-    void displayError(StyledText s);
+    void displayMessage(StyledText message);
 
 }
