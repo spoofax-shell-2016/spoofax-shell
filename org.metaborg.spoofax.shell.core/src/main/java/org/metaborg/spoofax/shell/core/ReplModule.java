@@ -22,6 +22,7 @@ import org.metaborg.spoofax.shell.output.IResultFactory;
 import com.google.common.io.Files;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.MapBinder;
 
@@ -32,13 +33,19 @@ import com.google.inject.multibindings.MapBinder;
  */
 public abstract class ReplModule extends SpoofaxModule {
 
-    protected MapBinder<String, IReplCommand> commandBinder;
+    protected MapBinder<String, IReplCommand<?, ?>> commandBinder;
 
     /**
      * Binds the default commands.
      */
     protected void configureCommands() {
-        commandBinder = MapBinder.newMapBinder(binder(), String.class, IReplCommand.class);
+        commandBinder =
+            // @formatter:off
+            MapBinder.newMapBinder(binder(),
+                                   new TypeLiteral<String>() { },
+                                   new TypeLiteral<IReplCommand<?, ?>>() { }
+                                  );
+            // @formatter:on
         commandBinder.addBinding("help").to(HelpCommand.class).in(Singleton.class);
         commandBinder.addBinding("load").to(LanguageCommand.class).in(Singleton.class);
 

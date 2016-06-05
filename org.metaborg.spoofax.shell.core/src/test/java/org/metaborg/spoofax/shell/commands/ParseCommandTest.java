@@ -5,9 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.apache.commons.vfs2.FileObject;
@@ -22,9 +19,7 @@ import org.metaborg.core.project.IProject;
 import org.metaborg.core.syntax.ParseException;
 import org.metaborg.spoofax.core.syntax.ISpoofaxSyntaxService;
 import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
-import org.metaborg.spoofax.shell.client.hooks.IResultHook;
 import org.metaborg.spoofax.shell.output.IResultFactory;
-import org.metaborg.spoofax.shell.output.ISpoofaxResult;
 import org.metaborg.spoofax.shell.output.InputResult;
 import org.metaborg.spoofax.shell.output.ParseResult;
 import org.mockito.Mock;
@@ -38,8 +33,6 @@ public class ParseCommandTest {
     // Constructor mocks
     @Mock private ISpoofaxSyntaxService syntaxService;
     @Mock private IResultFactory resultFactory;
-    @Mock
-    private IResultHook resultHook;
     @Mock private IProject project;
     @Mock private ILanguageImpl lang;
 
@@ -63,7 +56,7 @@ public class ParseCommandTest {
         when(resultFactory.createInputResult(any(), any(), any())).thenReturn(inputResult);
         when(resultFactory.createParseResult(any())).thenReturn(parseResult);
 
-        parseCommand = new ParseCommand(syntaxService, resultHook, resultFactory, project, lang);
+        parseCommand = new ParseCommand(syntaxService, resultFactory, project, lang);
     }
 
     /**
@@ -82,7 +75,7 @@ public class ParseCommandTest {
     public void testParseValid() throws MetaborgException {
         when(parseResult.valid()).thenReturn(true);
 
-        ParseResult actual = parseCommand.parse(inputResult);
+        ParseResult actual = parseCommand.execute("ignoredButValidString");
         assertEquals(actual, parseResult);
     }
 
@@ -94,7 +87,7 @@ public class ParseCommandTest {
     public void testParseInvalid() throws MetaborgException {
         when(parseResult.valid()).thenReturn(false);
 
-        parseCommand.parse(inputResult);
+        parseCommand.execute("ignoredButValidString");
     }
 
     /**
@@ -107,7 +100,7 @@ public class ParseCommandTest {
 
         try {
             parseCommand.execute("test");
-            verify(resultHook, times(1)).accept(any(ISpoofaxResult.class));
+            // TODO: check ParseResult? Not much use since it's mocked.
         } catch (MetaborgException e) {
             fail("Should not happen");
         }
@@ -123,6 +116,5 @@ public class ParseCommandTest {
         when(parseResult.valid()).thenReturn(false);
 
         parseCommand.execute("test");
-        verify(resultHook, never()).accept(any());
     }
 }

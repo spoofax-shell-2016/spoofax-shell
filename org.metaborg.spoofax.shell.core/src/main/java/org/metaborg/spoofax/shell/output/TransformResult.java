@@ -9,14 +9,14 @@ import org.metaborg.core.context.IContext;
 import org.metaborg.core.messages.IMessage;
 import org.metaborg.spoofax.core.stratego.IStrategoCommon;
 import org.metaborg.spoofax.core.unit.ISpoofaxTransformUnit;
-import org.metaborg.spoofax.shell.commands.SpoofaxCommand;
+import org.metaborg.spoofax.shell.commands.AbstractSpoofaxCommand;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 /**
- * Represents a {@link TransformResult} as returned by the {@link SpoofaxCommand}.
+ * Represents a {@link TransformResult} as returned by the {@link AbstractSpoofaxCommand}.
  * Wraps a {@link ISpoofaxTransformUnit}.
  */
 public class TransformResult extends AbstractSpoofaxResult<ISpoofaxTransformUnit<?>> {

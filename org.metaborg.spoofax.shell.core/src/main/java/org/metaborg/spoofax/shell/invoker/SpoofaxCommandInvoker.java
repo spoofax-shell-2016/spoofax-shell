@@ -12,8 +12,8 @@ import com.google.inject.Inject;
  */
 public class SpoofaxCommandInvoker implements ICommandInvoker {
     private final ICommandFactory factory;
-    private final Map<String, IReplCommand> defaults;
-    private final Map<String, IReplCommand> commands;
+    private final Map<String, IReplCommand<?, ?>> defaults;
+    private final Map<String, IReplCommand<?, ?>> commands;
 
     /**
      * Instantiates a new SpoofaxCommandInvoker.
@@ -23,7 +23,8 @@ public class SpoofaxCommandInvoker implements ICommandInvoker {
      *            The commands, with their command names as key (without prefix).
      */
     @Inject
-    public SpoofaxCommandInvoker(ICommandFactory factory, Map<String, IReplCommand> defaults) {
+    public SpoofaxCommandInvoker(ICommandFactory factory,
+                                 Map<String, IReplCommand<?, ?>> defaults) {
         this.factory = factory;
         this.defaults = defaults;
         this.commands = Maps.newConcurrentMap();
@@ -31,7 +32,7 @@ public class SpoofaxCommandInvoker implements ICommandInvoker {
     }
 
     @Override
-    public IReplCommand commandFromName(String commandName) throws CommandNotFoundException {
+    public IReplCommand<?, ?> commandFromName(String commandName) throws CommandNotFoundException {
         if (!commands.containsKey(commandName)) {
             throw new CommandNotFoundException(commandName);
         }
@@ -44,12 +45,12 @@ public class SpoofaxCommandInvoker implements ICommandInvoker {
     }
 
     @Override
-    public void addCommand(String name, IReplCommand command) {
+    public void addCommand(String name, IReplCommand<?, ?> command) {
         commands.put(name, command);
     }
 
     @Override
-    public Map<String, IReplCommand> getCommands() {
+    public Map<String, IReplCommand<?, ?>> getCommands() {
         return commands;
     }
 

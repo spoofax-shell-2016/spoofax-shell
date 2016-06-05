@@ -5,8 +5,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.RETURNS_MOCKS;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
@@ -15,10 +15,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.metaborg.core.MetaborgException;
-import org.metaborg.spoofax.shell.client.hooks.IMessageHook;
 import org.metaborg.spoofax.shell.invoker.CommandNotFoundException;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
+import org.metaborg.spoofax.shell.output.StyledText;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.Maps;
@@ -30,43 +31,13 @@ import com.google.common.collect.Maps;
 public class HelpCommandTest {
     // Constructor mocks
     @Mock private ICommandInvoker invoker;
-    @Mock
-    private IMessageHook messageHook;
+
+    // Command mocks
+    private IReplCommand<?, ?> singleLineComment;
+    private IReplCommand<?, ?> multiLineComment;
 
     private HelpCommand helpCommand;
-    private Map<String, IReplCommand> commands;
-
-    private static IReplCommand single, multi;
-    static {
-        single = new SingleLineComment();
-        multi = new MultiLineComment();
-    }
-
-    /**
-     * Represents a test command with a single line description.
-     */
-    private static class SingleLineComment implements IReplCommand {
-        @Override
-        public void execute(String... args) { }
-
-        @Override
-        public String description() {
-            return "test-1";
-        }
-    }
-
-    /**
-     * Represents a test command with a multi line description.
-     */
-    private static class MultiLineComment implements IReplCommand {
-        @Override
-        public void execute(String... args) { }
-
-        @Override
-        public String description() {
-            return "test-2\ntest-2";
-        }
-    }
+    private Map<String, IReplCommand<?, ?>> commands;
 
     /**
      * Set up mocks used in the test case.
@@ -74,14 +45,23 @@ public class HelpCommandTest {
      */
     @Before
     public void setup() throws CommandNotFoundException {
-        commands = Maps.newHashMap();
-        commands.put("name-1", single);
-        commands.put("name-2", multi);
+        singleLineComment = mock(IReplCommand.class, RETURNS_MOCKS);
+        multiLineComment = mock(IReplCommand.class, RETURNS_MOCKS);
 
+        commands = Maps.newHashMap();
+        commands.put("name-1", singleLineComment);
+        commands.put("name-2", multiLineComment);
+
+        when(singleLineComment.description()).thenReturn("test-1");
+        when(multiLineComment.description()).thenReturn("test-2\ntest-2");
         when(invoker.getCommands()).thenReturn(commands);
-        when(invoker.commandFromName("name-1")).thenReturn(single);
-        when(invoker.commandFromName("name-2")).thenReturn(multi);
-        helpCommand = new HelpCommand(messageHook, invoker);
+
+        Mockito.<IReplCommand<?, ?>>when(invoker.commandFromName("name-1"))
+        .thenReturn(singleLineComment);
+        Mockito.<IReplCommand<?, ?>>when(invoker.commandFromName("name-2"))
+        .thenReturn(multiLineComment);
+
+        helpCommand = new HelpCommand(invoker);
     }
 
     /**
@@ -102,9 +82,7 @@ public class HelpCommandTest {
     public void testCommandNotFound() throws MetaborgException {
         try {
             when(invoker.commandFromName(any())).thenThrow(new CommandNotFoundException("error"));
-
             helpCommand.execute("invalid-command");
-            verify(messageHook, never()).accept(any());
         } catch (CommandNotFoundException e) {
             fail("Should not happen");
         }
@@ -119,32 +97,25 @@ public class HelpCommandTest {
     @Test
     public void testCommandSingleLine() throws MetaborgException {
         String expected = "name-1 test-1";
-
-        IMessageHook messageHook = (s) -> assertEquals(expected, s.toString());
-        helpCommand = new HelpCommand(messageHook, invoker);
-
-        helpCommand.execute("name-1");
+        StyledText actual = helpCommand.execute("name-1");
+        assertEquals(expected, actual.toString());
     }
 
     /**
-     * Test getting help for an existing command with a multi line description.
+     * Test getting help for an existing command with a multi-line description.
      *
      * @throws MetaborgException
      *             Not expected.
      */
     @Test
     public void testCommandMultiLine() throws MetaborgException {
-        String expected = "name-2 test-2\n"
-                        + "       test-2";
-
-        IMessageHook messageHook = (s) -> assertEquals(expected, s.toString());
-        helpCommand = new HelpCommand(messageHook, invoker);
-
-        helpCommand.execute("name-2");
+        String expected = "name-2 test-2\n" + "       test-2";
+        StyledText actual = helpCommand.execute("name-2");
+        assertEquals(expected, actual.toString());
     }
 
     /**
-     * Test getting help for an existing command with a multi line description.
+     * Test getting help for an existing command with a multi-line description.
      *
      * @throws MetaborgException
      *             Not expected.
@@ -152,13 +123,10 @@ public class HelpCommandTest {
     @Test
     public void testCommands() throws MetaborgException {
         String expected = "name-1 test-1\n"
-                        + "name-2 test-2\n"
-                        + "       test-2";
-
-        IMessageHook messageHook = (s) -> assertEquals(expected, s.toString());
-        helpCommand = new HelpCommand(messageHook, invoker);
-
-        helpCommand.execute();
+                          + "name-2 test-2\n"
+                          + "       test-2";
+        StyledText actual = helpCommand.execute("");
+        assertEquals(expected.toString(), actual.toString());
     }
 
 }

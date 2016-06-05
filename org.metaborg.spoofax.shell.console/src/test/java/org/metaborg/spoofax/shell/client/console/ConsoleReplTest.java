@@ -10,7 +10,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,9 +22,11 @@ import org.metaborg.spoofax.shell.client.IEditor;
 import org.metaborg.spoofax.shell.client.console.commands.ExitCommand;
 import org.metaborg.spoofax.shell.client.console.impl.ConsoleRepl;
 import org.metaborg.spoofax.shell.client.console.impl.ConsoleReplModule;
+import org.metaborg.spoofax.shell.commands.IReplCommand;
 import org.metaborg.spoofax.shell.core.ReplModule;
 import org.metaborg.spoofax.shell.invoker.CommandNotFoundException;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
+import org.mockito.Mockito;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -127,7 +128,8 @@ public class ConsoleReplTest {
 
             // Stub the invoker so that it returns an exit command which we can spy on.
             ExitCommand exitCommandMock = spy(new ExitCommand(() -> repl));
-            when(invokerMock.commandFromName("exit")).thenReturn(exitCommandMock);
+            Mockito.<IReplCommand<?, ?>> when(invokerMock.commandFromName("exit"))
+                .thenReturn(exitCommandMock);
 
             repl.run();
 
@@ -135,7 +137,7 @@ public class ConsoleReplTest {
             verify(invokerMock, times(1)).execute(":exit");
 
             // Ensure that exitCommand was executed once.
-            verify(exitCommandMock, times(1)).execute();
+            verify(exitCommandMock, times(1)).execute(null);
 
             // Verify that the Editor was not asked for input after the exit command was executed.
             verify(editorMock, times(1)).getInput();

@@ -9,7 +9,7 @@ import com.google.inject.Provider;
 /**
  * Exit the REPL.
  */
-public class ExitCommand implements IReplCommand {
+public class ExitCommand implements IReplCommand<Void, Void> {
 
     private final Provider<ConsoleRepl> replProvider;
 
@@ -30,7 +30,8 @@ public class ExitCommand implements IReplCommand {
     }
 
     @Override
-    public void execute(String... args) {
+    public Void execute(Void arg) {
         replProvider.get().setRunning(false);
+        return arg;
     }
 }

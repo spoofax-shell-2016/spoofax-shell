@@ -13,7 +13,6 @@ import org.metaborg.core.language.LanguageUtils;
 import org.metaborg.core.menu.IMenuService;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.resource.IResourceService;
-import org.metaborg.spoofax.shell.client.hooks.IMessageHook;
 import org.metaborg.spoofax.shell.invoker.ICommandFactory;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
 import org.metaborg.spoofax.shell.output.StyledText;
@@ -23,9 +22,7 @@ import com.google.inject.Inject;
 /**
  * Represents a command that loads a Spoofax language.
  */
-public class LanguageCommand implements IReplCommand {
-
-    private final IMessageHook messageHook;
+public class LanguageCommand implements IReplCommand<String, StyledText> {
     private final ILanguageDiscoveryService langDiscoveryService;
     private final IResourceService resourceService;
     private final IMenuService menuService;
@@ -36,8 +33,6 @@ public class LanguageCommand implements IReplCommand {
     /**
      * Instantiate a {@link LanguageCommand}. Loads all commands applicable to a lanugage.
      *
-     * @param messageHook
-     *            the {@link IMessageHook} to send messages to.
      * @param langDiscoveryService
      *            the {@link ILanguageDiscoveryService}
      * @param resourceService
@@ -50,11 +45,10 @@ public class LanguageCommand implements IReplCommand {
      *            the associated {@link IProject}
      */
     @Inject
-    public LanguageCommand(IMessageHook messageHook, ILanguageDiscoveryService langDiscoveryService,
+    public LanguageCommand(ILanguageDiscoveryService langDiscoveryService,
                            IResourceService resourceService, IMenuService menuService,
                            ICommandInvoker invoker,
                            IProject project) { // FIXME: don't use the hardcoded @Provides
-        this.messageHook = messageHook;
         this.langDiscoveryService = langDiscoveryService;
         this.resourceService = resourceService;
         this.menuService = menuService;
@@ -87,12 +81,12 @@ public class LanguageCommand implements IReplCommand {
     }
 
     @Override
-    public void execute(String... args) throws MetaborgException {
-        if (args.length == 0 || args.length > 1) {
+    public StyledText execute(String arg) throws MetaborgException {
+        if (arg == null || arg.length() == 0) {
             throw new MetaborgException("Syntax: :lang <path>");
         }
 
-        FileObject resolve = resourceService.resolve("zip:" + args[0] + "!/");
+        FileObject resolve = resourceService.resolve("zip:" + arg + "!/");
         ILanguageImpl lang = load(resolve);
         boolean analyze = lang.hasFacet(AnalyzerFacet.class);
 
@@ -103,10 +97,13 @@ public class LanguageCommand implements IReplCommand {
             invoker.addCommand("analyze", commandFactory.createAnalyze(project, lang));
         }
         new TransformVisitor(menuService).getActions(lang).forEach((key, action) -> {
-            invoker.addCommand(key, commandFactory.createTransform(project, lang, action, analyze));
+            invoker.addCommand(key,
+                               analyze
+                                   ? commandFactory.createAnalyzedTransform(project, lang, action)
+                                   : commandFactory.createParsedTransform(project, lang, action));
         });
 
-        messageHook.accept(new StyledText("Loaded language" + lang));
+        return new StyledText("Loaded language " + lang);
     }
 
 }

@@ -49,7 +49,7 @@ public class ExitCommandTest {
      */
     @Test
     public void testExecute() {
-        exitCommand.execute(new String[] { });
+        exitCommand.execute(null);
         verify(repl).setRunning(false);
     }
 }
