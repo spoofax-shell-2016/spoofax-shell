@@ -1,8 +1,8 @@
-package org.metaborg.spoofax.shell.client.console;
+package org.metaborg.spoofax.shell.client.console.impl;
 
 import static org.junit.Assert.fail;
-import static org.metaborg.spoofax.shell.client.console.TerminalUserInterfaceTest.C_D;
-import static org.metaborg.spoofax.shell.client.console.TerminalUserInterfaceTest.ENTER;
+import static org.metaborg.spoofax.shell.client.console.impl.TerminalUserInterfaceTest.C_D;
+import static org.metaborg.spoofax.shell.client.console.impl.TerminalUserInterfaceTest.ENTER;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
@@ -20,8 +20,6 @@ import org.junit.Test;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.spoofax.shell.client.IEditor;
 import org.metaborg.spoofax.shell.client.console.commands.ExitCommand;
-import org.metaborg.spoofax.shell.client.console.impl.ConsoleRepl;
-import org.metaborg.spoofax.shell.client.console.impl.ConsoleReplModule;
 import org.metaborg.spoofax.shell.commands.IReplCommand;
 import org.metaborg.spoofax.shell.core.ReplModule;
 import org.metaborg.spoofax.shell.invoker.CommandNotFoundException;
@@ -41,8 +39,8 @@ public class ConsoleReplTest {
     private ConsoleRepl repl;
     private ByteArrayInputStream in;
     private ByteArrayOutputStream out;
-    private IEditor editorMock;
-    private ICommandInvoker invokerMock;
+    private IEditor editorSpy;
+    private ICommandInvoker invokerSpy;
 
     /**
      * Create an {@link Injector} with {@link Module} {@code overrides}.
@@ -87,10 +85,10 @@ public class ConsoleReplTest {
 
     private void setUpCtrlD() throws IOException {
         setUp(String.valueOf(C_D));
-        invokerMock = mock(ICommandInvoker.class, RETURNS_MOCKS);
+        invokerSpy = mock(ICommandInvoker.class, RETURNS_MOCKS);
 
         // Create a user input simulated ConsoleRepl with the mock invoker.
-        createRepl(new UserInputSimulationModule(in, out), new MockModule(invokerMock));
+        createRepl(new UserInputSimulationModule(in, out), new MockModule(invokerSpy));
     }
 
     /**
@@ -102,7 +100,7 @@ public class ConsoleReplTest {
             setUpCtrlD();
             repl.run();
             // Ensure that the command invoker is never called with any command.
-            verify(invokerMock, never()).execute(anyString());
+            verify(invokerSpy, never()).execute(anyString());
         } catch (IOException | MetaborgException | CommandNotFoundException e) {
             fail("Should not happen");
         }
@@ -111,11 +109,11 @@ public class ConsoleReplTest {
     private void setUpExit() throws IOException {
         setUp(":exit" + ENTER + ENTER + ":exit" + ENTER + ENTER);
         createInjector(new UserInputSimulationModule(in, out));
-        invokerMock = spy(injector.getInstance(ICommandInvoker.class));
-        editorMock = spy(injector.getInstance(IEditor.class));
+        invokerSpy = spy(injector.getInstance(ICommandInvoker.class));
+        editorSpy = spy(injector.getInstance(IEditor.class));
 
         // Create a user input simulated ConsoleRepl with the mock invoker and mock editor.
-        createRepl(new UserInputSimulationModule(in, out), new MockModule(invokerMock, editorMock));
+        createRepl(new UserInputSimulationModule(in, out), new MockModule(invokerSpy, editorSpy));
     }
 
     /**
@@ -127,20 +125,20 @@ public class ConsoleReplTest {
             setUpExit();
 
             // Stub the invoker so that it returns an exit command which we can spy on.
-            ExitCommand exitCommandMock = spy(new ExitCommand(() -> repl));
-            Mockito.<IReplCommand<?, ?>> when(invokerMock.commandFromName("exit"))
-                .thenReturn(exitCommandMock);
+            ExitCommand exitCommandSpy = spy(new ExitCommand(() -> repl));
+            Mockito.<IReplCommand<?, ?>> when(invokerSpy.commandFromName("exit"))
+                .thenReturn(exitCommandSpy);
 
             repl.run();
 
             // Ensure that the command was given to the invoker just once.
-            verify(invokerMock, times(1)).execute(":exit");
+            verify(invokerSpy, times(1)).execute(":exit");
 
             // Ensure that exitCommand was executed once.
-            verify(exitCommandMock, times(1)).execute(null);
+            verify(exitCommandSpy, times(1)).execute(null);
 
             // Verify that the Editor was not asked for input after the exit command was executed.
-            verify(editorMock, times(1)).getInput();
+            verify(editorSpy, times(1)).getInput();
         } catch (IOException | CommandNotFoundException | MetaborgException e) {
             fail("Should not happen");
         }
