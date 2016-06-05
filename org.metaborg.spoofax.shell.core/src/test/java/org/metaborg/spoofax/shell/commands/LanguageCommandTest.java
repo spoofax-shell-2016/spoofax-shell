@@ -20,6 +20,7 @@ import org.metaborg.core.language.ILanguageComponent;
 import org.metaborg.core.language.ILanguageDiscoveryRequest;
 import org.metaborg.core.language.ILanguageDiscoveryService;
 import org.metaborg.core.language.ILanguageImpl;
+import org.metaborg.core.menu.IMenuService;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.resource.IResourceService;
 import org.metaborg.core.syntax.ParseException;
@@ -42,9 +43,9 @@ public class LanguageCommandTest {
     // Constructor mocks
     @Mock private ILanguageDiscoveryService langDiscoveryService;
     @Mock private IResourceService resourceService;
+    @Mock private IMenuService menuService;
     @Mock private ICommandInvoker invoker;
-    @Mock
-    private IMessageHook messageHook;
+    @Mock private IMessageHook messageHook;
     @Mock private IProject project;
 
     @Mock private ICommandFactory commandFactory;
@@ -68,7 +69,7 @@ public class LanguageCommandTest {
         .thenReturn(Lists.newArrayList(lang));
 
         langCommand = new LanguageCommand(messageHook, langDiscoveryService, resourceService,
-                                          invoker, project);
+                                          menuService, invoker, project);
     }
 
     /**
@@ -144,6 +145,7 @@ public class LanguageCommandTest {
     public void testExecute() throws MetaborgException {
         Iterable<ILanguageDiscoveryRequest> langrequest = any();
         when(langDiscoveryService.discover(langrequest)).thenReturn(Lists.newArrayList(langcomp));
+        when(menuService.menuItems(any())).thenReturn(Lists.newArrayList());
 
         langCommand.execute("res:paplj.full");
         verify(invoker, times(1)).resetCommands();
@@ -159,6 +161,7 @@ public class LanguageCommandTest {
     public void testExecuteAnalyzed() throws MetaborgException {
         Iterable<ILanguageDiscoveryRequest> langrequest = any();
         when(langDiscoveryService.discover(langrequest)).thenReturn(Lists.newArrayList(langcomp));
+        when(menuService.menuItems(any())).thenReturn(Lists.newArrayList());
         when(lang.hasFacet(AnalysisFacet.class)).thenReturn(true);
 
         langCommand.execute("res:paplj.full");

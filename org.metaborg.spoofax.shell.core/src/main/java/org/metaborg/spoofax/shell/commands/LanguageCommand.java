@@ -10,6 +10,7 @@ import org.metaborg.core.language.ILanguageDiscoveryRequest;
 import org.metaborg.core.language.ILanguageDiscoveryService;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.LanguageUtils;
+import org.metaborg.core.menu.IMenuService;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.resource.IResourceService;
 import org.metaborg.spoofax.shell.client.hooks.IMessageHook;
@@ -27,6 +28,7 @@ public class LanguageCommand implements IReplCommand {
     private final IMessageHook messageHook;
     private final ILanguageDiscoveryService langDiscoveryService;
     private final IResourceService resourceService;
+    private final IMenuService menuService;
     private final ICommandInvoker invoker;
     private final IProject project;
     private ILanguageImpl lang;
@@ -42,16 +44,20 @@ public class LanguageCommand implements IReplCommand {
      *            the {@link IResourceService}
      * @param invoker
      *            the {@link ICommandInvoker}
+     * @param menuService
+     *            the {@link IMenuService}
      * @param project
      *            the associated {@link IProject}
      */
     @Inject
     public LanguageCommand(IMessageHook messageHook, ILanguageDiscoveryService langDiscoveryService,
-                           IResourceService resourceService, ICommandInvoker invoker,
+                           IResourceService resourceService, IMenuService menuService,
+                           ICommandInvoker invoker,
                            IProject project) { // FIXME: don't use the hardcoded @Provides
         this.messageHook = messageHook;
         this.langDiscoveryService = langDiscoveryService;
         this.resourceService = resourceService;
+        this.menuService = menuService;
         this.invoker = invoker;
         this.project = project;
     }
@@ -93,11 +99,12 @@ public class LanguageCommand implements IReplCommand {
         invoker.resetCommands();
         ICommandFactory commandFactory = invoker.getCommandFactory();
         invoker.addCommand("parse", commandFactory.createParse(project, lang));
-        invoker.addCommand("transform", commandFactory.createTransform(project, lang, analyze));
-
         if (analyze) {
             invoker.addCommand("analyze", commandFactory.createAnalyze(project, lang));
         }
+        new TransformVisitor(menuService).getActions(lang).forEach((key, action) -> {
+            invoker.addCommand(key, commandFactory.createTransform(project, lang, action, analyze));
+        });
 
         messageHook.accept(new StyledText("Loaded language" + lang));
     }
