@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.metaborg.core.MetaborgException;
+import org.metaborg.spoofax.shell.client.IDisplay;
+import org.metaborg.spoofax.shell.client.hooks.IHook;
 import org.metaborg.spoofax.shell.invoker.CommandNotFoundException;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
 import org.metaborg.spoofax.shell.output.StyledText;
@@ -15,7 +17,7 @@ import com.google.inject.Inject;
 /**
  * Shows descriptions of all commands, or one command if given.
  */
-public class HelpCommand implements IReplCommand<String, StyledText> {
+public class HelpCommand implements IReplCommand<String> {
     private final ICommandInvoker invoker;
 
     /**
@@ -39,7 +41,7 @@ public class HelpCommand implements IReplCommand<String, StyledText> {
      * @param commands  the {@link IReplCommand} map
      * @return a formatted string
      */
-    public String formathelp(Map<String, IReplCommand<?, ?>> commands) {
+    public String formathelp(Map<String, IReplCommand<?>> commands) {
         int longestCommand = commands.keySet().stream().mapToInt(a -> a.length()).max().orElse(0);
         String format = "%-" + longestCommand + "s %s";
 
@@ -55,17 +57,18 @@ public class HelpCommand implements IReplCommand<String, StyledText> {
     }
 
     @Override
-    public StyledText execute(String arg) throws MetaborgException {
+    public IHook execute(String arg) throws MetaborgException {
         try {
-            Map<String, IReplCommand<?, ?>> commands;
+            Map<String, IReplCommand<?>> commands;
             if (arg.length() > 0) {
-                IReplCommand<?, ?> command = invoker.commandFromName(arg);
+                IReplCommand<?> command = invoker.commandFromName(arg);
                 commands = Collections.singletonMap(arg, command);
             } else {
                 commands = invoker.getCommands();
             }
 
-            return new StyledText(formathelp(commands));
+            return (IDisplay display) -> display
+                .displayMessage(new StyledText(formathelp(commands)));
         } catch (CommandNotFoundException e) {
             throw new MetaborgException("Command not found: " + e.commandName());
         }

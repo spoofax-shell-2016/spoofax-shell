@@ -3,10 +3,11 @@ package org.metaborg.spoofax.shell.commands;
 import static org.hamcrest.CoreMatchers.isA;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
@@ -15,9 +16,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.metaborg.core.MetaborgException;
+import org.metaborg.spoofax.shell.client.IDisplay;
 import org.metaborg.spoofax.shell.invoker.CommandNotFoundException;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
 import org.metaborg.spoofax.shell.output.StyledText;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -32,12 +36,15 @@ public class HelpCommandTest {
     // Constructor mocks
     @Mock private ICommandInvoker invoker;
 
+    @Mock private IDisplay display;
+    @Captor private ArgumentCaptor<StyledText> captor;
+
     // Command mocks
-    private IReplCommand<?, ?> singleLineComment;
-    private IReplCommand<?, ?> multiLineComment;
+    private IReplCommand<?> singleLineComment;
+    private IReplCommand<?> multiLineComment;
 
     private HelpCommand helpCommand;
-    private Map<String, IReplCommand<?, ?>> commands;
+    private Map<String, IReplCommand<?>> commands;
 
     /**
      * Set up mocks used in the test case.
@@ -56,9 +63,9 @@ public class HelpCommandTest {
         when(multiLineComment.description()).thenReturn("test-2\ntest-2");
         when(invoker.getCommands()).thenReturn(commands);
 
-        Mockito.<IReplCommand<?, ?>>when(invoker.commandFromName("name-1"))
+        Mockito.<IReplCommand<?>> when(invoker.commandFromName("name-1"))
         .thenReturn(singleLineComment);
-        Mockito.<IReplCommand<?, ?>>when(invoker.commandFromName("name-2"))
+        Mockito.<IReplCommand<?>> when(invoker.commandFromName("name-2"))
         .thenReturn(multiLineComment);
 
         helpCommand = new HelpCommand(invoker);
@@ -77,15 +84,14 @@ public class HelpCommandTest {
      *
      * @throws MetaborgException
      *             expected.
+     * @throws CommandNotFoundException
+     *             Should not happen.
      */
     @Test(expected = MetaborgException.class)
-    public void testCommandNotFound() throws MetaborgException {
-        try {
-            when(invoker.commandFromName(any())).thenThrow(new CommandNotFoundException("error"));
-            helpCommand.execute("invalid-command");
-        } catch (CommandNotFoundException e) {
-            fail("Should not happen");
-        }
+    public void testCommandNotFound() throws MetaborgException, CommandNotFoundException {
+        when(invoker.commandFromName(any())).thenThrow(new CommandNotFoundException("error"));
+        helpCommand.execute("invalid-command").accept(display);
+        verify(display, times(0)).displayResult(any());
     }
 
     /**
@@ -97,8 +103,10 @@ public class HelpCommandTest {
     @Test
     public void testCommandSingleLine() throws MetaborgException {
         String expected = "name-1 test-1";
-        StyledText actual = helpCommand.execute("name-1");
-        assertEquals(expected, actual.toString());
+        helpCommand.execute("name-1").accept(display);
+
+        verify(display, times(1)).displayMessage(captor.capture());
+        assertEquals(expected, captor.getValue().toString());
     }
 
     /**
@@ -110,8 +118,10 @@ public class HelpCommandTest {
     @Test
     public void testCommandMultiLine() throws MetaborgException {
         String expected = "name-2 test-2\n" + "       test-2";
-        StyledText actual = helpCommand.execute("name-2");
-        assertEquals(expected, actual.toString());
+        helpCommand.execute("name-2").accept(display);
+
+        verify(display, times(1)).displayMessage(captor.capture());
+        assertEquals(expected, captor.getValue().toString());
     }
 
     /**
@@ -125,8 +135,9 @@ public class HelpCommandTest {
         String expected = "name-1 test-1\n"
                           + "name-2 test-2\n"
                           + "       test-2";
-        StyledText actual = helpCommand.execute("");
-        assertEquals(expected.toString(), actual.toString());
+        helpCommand.execute("").accept(display);
+        verify(display, times(1)).displayMessage(captor.capture());
+        assertEquals(expected, captor.getValue().toString());
     }
 
 }

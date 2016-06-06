@@ -1,17 +1,15 @@
 package org.metaborg.spoofax.shell.commands;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.analysis.IAnalysisService;
 import org.metaborg.core.context.IContext;
 import org.metaborg.core.context.IContextService;
 import org.metaborg.core.language.ILanguageImpl;
-import org.metaborg.core.messages.IMessage;
 import org.metaborg.core.project.IProject;
 import org.metaborg.spoofax.core.analysis.ISpoofaxAnalysisService;
 import org.metaborg.spoofax.core.unit.ISpoofaxAnalyzeUnit;
+import org.metaborg.spoofax.shell.client.IDisplay;
+import org.metaborg.spoofax.shell.client.hooks.IHook;
 import org.metaborg.spoofax.shell.output.AnalyzeResult;
 import org.metaborg.spoofax.shell.output.IResultFactory;
 import org.metaborg.spoofax.shell.output.ParseResult;
@@ -23,7 +21,7 @@ import com.google.inject.assistedinject.Assisted;
 /**
  * Represents an analyze command sent to Spoofax.
  */
-public class AnalyzeCommand extends AbstractSpoofaxCommand<ParseResult, AnalyzeResult> {
+public class AnalyzeCommand extends AbstractSpoofaxCommand<ParseResult> {
     private static final String DESCRIPTION = "Analyze an expression.";
     private final IContextService contextService;
     private final ISpoofaxAnalysisService analysisService;
@@ -56,28 +54,16 @@ public class AnalyzeCommand extends AbstractSpoofaxCommand<ParseResult, AnalyzeR
         return DESCRIPTION;
     }
 
-    private AnalyzeResult analyze(ParseResult unit) throws MetaborgException {
-        IContext context = unit.context().orElse(contextService.get(unit.source(), project, lang));
+    @Override
+    public IHook execute(ParseResult arg) throws MetaborgException {
+        IContext context = arg.context().orElse(contextService.get(arg.source(), project, lang));
 
         ISpoofaxAnalyzeUnit analyze;
         try (IClosableLock lock = context.write()) {
-            analyze = analysisService.analyze(unit.unit(), context).result();
+            analyze = analysisService.analyze(arg.unit(), context).result();
         }
         AnalyzeResult result = resultFactory.createAnalyzeResult(analyze);
 
-        // TODO: pass the result to the client instead of throwing an exception -- The client needs
-        // the result in order to do fancy stuff.
-        if (!result.valid()) {
-            String collect = Stream.concat(Stream.of("Analyze messages:"),
-                                           result.messages().stream().map(IMessage::message))
-                    .collect(Collectors.joining("\n"));
-            throw new MetaborgException(collect);
-        }
-        return result;
-    }
-
-    @Override
-    public AnalyzeResult execute(ParseResult arg) throws MetaborgException {
-        return analyze(arg);
+        return (IDisplay display) -> display.displayResult(result);
     }
 }

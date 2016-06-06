@@ -1,9 +1,10 @@
 package org.metaborg.spoofax.shell.commands;
 
 import static org.hamcrest.CoreMatchers.isA;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -23,6 +24,7 @@ import org.metaborg.core.project.IProject;
 import org.metaborg.spoofax.core.analysis.ISpoofaxAnalysisService;
 import org.metaborg.spoofax.core.analysis.ISpoofaxAnalyzeResult;
 import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
+import org.metaborg.spoofax.shell.client.IDisplay;
 import org.metaborg.spoofax.shell.output.AnalyzeResult;
 import org.metaborg.spoofax.shell.output.IResultFactory;
 import org.metaborg.spoofax.shell.output.ParseResult;
@@ -46,6 +48,8 @@ public class AnalyzeCommandTest {
     @Mock private ParseResult parseResult;
     @Mock private ISpoofaxAnalyzeResult spoofaxAnalyzeResult;
     @Mock private AnalyzeResult analyzeResult;
+
+    @Mock private IDisplay display;
 
     private FileObject sourceFile;
     private AnalyzeCommand analyzeCommand;
@@ -85,21 +89,8 @@ public class AnalyzeCommandTest {
      * @throws IOException when reading from file fails
      */
     @Test
-    public void testAnalyzeValid() throws MetaborgException {
-        when(analyzeResult.valid()).thenReturn(true);
-
-        AnalyzeResult actual = analyzeCommand.execute(parseResult);
-        assertEquals(actual, analyzeResult);
-    }
-
-    /**
-     * Test parsing source that results in an invalid {@link ISpoofaxParseUnit}.
-     * @throws MetaborgException when the source contains invalid syntax
-     */
-    @Test(expected = MetaborgException.class)
-    public void testAnalyzeInvalid() throws MetaborgException {
-        when(analyzeResult.valid()).thenReturn(false);
-
-        analyzeCommand.execute(parseResult);
+    public void testAnalyze() throws MetaborgException {
+        analyzeCommand.execute(parseResult).accept(display);
+        verify(display, times(1)).displayResult(analyzeResult);
     }
 }

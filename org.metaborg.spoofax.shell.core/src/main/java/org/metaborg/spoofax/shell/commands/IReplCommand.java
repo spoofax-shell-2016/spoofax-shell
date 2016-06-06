@@ -1,6 +1,7 @@
 package org.metaborg.spoofax.shell.commands;
 
 import org.metaborg.core.MetaborgException;
+import org.metaborg.spoofax.shell.client.hooks.IHook;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
 
 /**
@@ -9,10 +10,8 @@ import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
  *
  * @param <A>
  *            The argument type of the {@link #execute(A)} method.
- * @param <R>
- *            The return type of the {@link #execute(A)} method.
  */
-public interface IReplCommand<A, R> {
+public interface IReplCommand<A> {
 
     /**
      * @return The description of this command.
@@ -24,9 +23,9 @@ public interface IReplCommand<A, R> {
      *
      * @param arg
      *            The arguments for this command.
-     * @return The result of this command.
+     * @return An {@link IHook} to process the result of this command.
      * @throws MetaborgException
      *             When something goes wrong during execution.
      */
-    R execute(A arg) throws MetaborgException;
+    IHook execute(A arg) throws MetaborgException;
 }

@@ -126,7 +126,7 @@ public class ConsoleReplTest {
 
             // Stub the invoker so that it returns an exit command which we can spy on.
             ExitCommand exitCommandSpy = spy(new ExitCommand(() -> repl));
-            Mockito.<IReplCommand<?, ?>> when(invokerSpy.commandFromName("exit"))
+            Mockito.<IReplCommand<?>> when(invokerSpy.commandFromName("exit"))
                 .thenReturn(exitCommandSpy);
 
             repl.run();

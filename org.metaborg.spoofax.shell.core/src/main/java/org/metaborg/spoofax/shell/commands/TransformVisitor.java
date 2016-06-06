@@ -41,7 +41,8 @@ public class TransformVisitor implements IMenuItemVisitor {
      */
     public Map<String, ITransformAction> getActions(ILanguageImpl lang) {
         actions = Maps.newHashMap();
-        menuService.menuItems(lang).forEach(e -> e.accept(this));
+        Iterable<IMenuItem> menuItems = menuService.menuItems(lang);
+        menuItems.forEach(e -> e.accept(this));
         return actions;
     }
 

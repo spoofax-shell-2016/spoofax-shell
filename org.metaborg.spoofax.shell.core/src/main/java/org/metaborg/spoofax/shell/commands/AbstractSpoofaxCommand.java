@@ -3,6 +3,7 @@ package org.metaborg.spoofax.shell.commands;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.project.IProject;
+import org.metaborg.spoofax.shell.client.hooks.IHook;
 import org.metaborg.spoofax.shell.output.IResultFactory;
 import org.metaborg.spoofax.shell.output.ISpoofaxResult;
 
@@ -13,11 +14,9 @@ import com.google.inject.Inject;
  *
  * @param <A>
  *            The argument type of the {@link #execute(A)} method.
- * @param <R>
- *            The return type of the {@link #execute(A)} method.
  */
-public abstract class AbstractSpoofaxCommand<A, R extends ISpoofaxResult<?>>
-    implements IReplCommand<A, R> {
+public abstract class AbstractSpoofaxCommand<A extends ISpoofaxResult<?>>
+    implements IReplCommand<A> {
     protected final IResultFactory resultFactory;
     protected final IProject project;
     protected final ILanguageImpl lang;
@@ -41,5 +40,5 @@ public abstract class AbstractSpoofaxCommand<A, R extends ISpoofaxResult<?>>
     }
 
     @Override
-    public abstract R execute(A arg) throws MetaborgException;
+    public abstract IHook execute(A arg) throws MetaborgException;
 }

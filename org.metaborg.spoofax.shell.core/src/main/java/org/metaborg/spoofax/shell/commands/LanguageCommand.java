@@ -13,6 +13,8 @@ import org.metaborg.core.language.LanguageUtils;
 import org.metaborg.core.menu.IMenuService;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.resource.IResourceService;
+import org.metaborg.spoofax.shell.client.IDisplay;
+import org.metaborg.spoofax.shell.client.hooks.IHook;
 import org.metaborg.spoofax.shell.invoker.ICommandFactory;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
 import org.metaborg.spoofax.shell.output.StyledText;
@@ -22,7 +24,7 @@ import com.google.inject.Inject;
 /**
  * Represents a command that loads a Spoofax language.
  */
-public class LanguageCommand implements IReplCommand<String, StyledText> {
+public class LanguageCommand implements IReplCommand<String> {
     private final ILanguageDiscoveryService langDiscoveryService;
     private final IResourceService resourceService;
     private final IMenuService menuService;
@@ -61,13 +63,7 @@ public class LanguageCommand implements IReplCommand<String, StyledText> {
         return "Load a language from a path.";
     }
 
-    /**
-     * Load a {@link ILanguageImpl} from a {@link FileObject}.
-     * @param langloc the {@link FileObject} containing the {@link ILanguageImpl}
-     * @return        the {@link ILanguageImpl}
-     * @throws MetaborgException when loading fails
-     */
-    public ILanguageImpl load(FileObject langloc) throws MetaborgException {
+    private ILanguageImpl load(FileObject langloc) throws MetaborgException {
         Iterable<ILanguageDiscoveryRequest> requests = langDiscoveryService.request(langloc);
         Iterable<ILanguageComponent> components = langDiscoveryService.discover(requests);
 
@@ -81,7 +77,7 @@ public class LanguageCommand implements IReplCommand<String, StyledText> {
     }
 
     @Override
-    public StyledText execute(String arg) throws MetaborgException {
+    public IHook execute(String arg) throws MetaborgException {
         if (arg == null || arg.length() == 0) {
             throw new MetaborgException("Syntax: :lang <path>");
         }
@@ -103,7 +99,8 @@ public class LanguageCommand implements IReplCommand<String, StyledText> {
                                    : commandFactory.createParsedTransform(project, lang, action));
         });
 
-        return new StyledText("Loaded language " + lang);
+        return (IDisplay display) -> display
+            .displayMessage(new StyledText("Loaded language " + lang));
     }
 
 }
