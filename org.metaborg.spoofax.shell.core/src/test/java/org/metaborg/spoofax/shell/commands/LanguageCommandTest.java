@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.isA;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -20,14 +21,19 @@ import org.metaborg.core.language.ILanguageComponent;
 import org.metaborg.core.language.ILanguageDiscoveryRequest;
 import org.metaborg.core.language.ILanguageDiscoveryService;
 import org.metaborg.core.language.ILanguageImpl;
+import org.metaborg.core.menu.IMenuItem;
+import org.metaborg.core.menu.IMenuService;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.resource.IResourceService;
 import org.metaborg.core.syntax.ParseException;
 import org.metaborg.spoofax.core.analysis.AnalysisFacet;
 import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
-import org.metaborg.spoofax.shell.hooks.IMessageHook;
+import org.metaborg.spoofax.shell.client.IDisplay;
 import org.metaborg.spoofax.shell.invoker.ICommandFactory;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
+import org.metaborg.spoofax.shell.output.StyledText;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -42,10 +48,12 @@ public class LanguageCommandTest {
     // Constructor mocks
     @Mock private ILanguageDiscoveryService langDiscoveryService;
     @Mock private IResourceService resourceService;
+    @Mock private IMenuService menuService;
     @Mock private ICommandInvoker invoker;
-    @Mock
-    private IMessageHook messageHook;
     @Mock private IProject project;
+
+    @Mock private IDisplay display;
+    @Captor private ArgumentCaptor<StyledText> captor;
 
     @Mock private ICommandFactory commandFactory;
 
@@ -64,10 +72,14 @@ public class LanguageCommandTest {
     public void setup() throws FileSystemException, ParseException {
         langloc = VFS.getManager().resolveFile("res:paplj.full");
         when(invoker.getCommandFactory()).thenReturn(commandFactory);
-        Mockito.<Iterable<? extends ILanguageImpl>>when(langcomp.contributesTo())
-        .thenReturn(Lists.newArrayList(lang));
 
-        langCommand = new LanguageCommand(messageHook, langDiscoveryService, resourceService,
+        Iterable<IMenuItem> list = Lists.newArrayList();
+        when(menuService.menuItems(any())).thenReturn(list);
+        Mockito.<Iterable<? extends ILanguageImpl>>when(langcomp.contributesTo())
+            .thenReturn(Lists.newArrayList(lang));
+        when(resourceService.resolve(anyString())).thenReturn(langloc);
+
+        langCommand = new LanguageCommand(langDiscoveryService, resourceService, menuService,
                                           invoker, project);
     }
 
@@ -89,7 +101,7 @@ public class LanguageCommandTest {
         Iterable<ILanguageDiscoveryRequest> langrequest = any();
         when(langDiscoveryService.discover(langrequest)).thenReturn(Lists.newArrayList());
 
-        langCommand.load(langloc);
+        langCommand.execute("res:paplj.full");
     }
 
     /**
@@ -102,10 +114,12 @@ public class LanguageCommandTest {
         Iterable<ILanguageDiscoveryRequest> langrequest = any();
         when(langDiscoveryService.discover(langrequest)).thenReturn(Lists.newArrayList(langcomp));
 
-        ILanguageImpl actual = langCommand.load(langloc);
+        String expected = "Loaded language lang";
+        langCommand.execute("res:paplj.full").accept(display);
+        verify(display, times(1)).displayMessage(captor.capture());
         verify(langDiscoveryService, times(1)).request(langloc);
         verify(langDiscoveryService, times(1)).discover(langrequest);
-        assertEquals(lang, actual);
+        assertEquals(expected, captor.getValue().toString());
     }
 
     /**
@@ -117,7 +131,7 @@ public class LanguageCommandTest {
         Iterable<ILanguageDiscoveryRequest> langrequest = any();
         when(langDiscoveryService.discover(langrequest)).thenReturn(Lists.newArrayList(langcomp));
 
-        langCommand.execute();
+        langCommand.execute("");
     }
 
     /**
@@ -131,7 +145,7 @@ public class LanguageCommandTest {
         Iterable<ILanguageDiscoveryRequest> langrequest = any();
         when(langDiscoveryService.discover(langrequest)).thenReturn(Lists.newArrayList(langcomp));
 
-        langCommand.execute(new String[] { "", "" });
+        langCommand.execute(null);
     }
 
     /**
@@ -144,11 +158,14 @@ public class LanguageCommandTest {
     public void testExecute() throws MetaborgException {
         Iterable<ILanguageDiscoveryRequest> langrequest = any();
         when(langDiscoveryService.discover(langrequest)).thenReturn(Lists.newArrayList(langcomp));
+        when(menuService.menuItems(any())).thenReturn(Lists.newArrayList());
 
-        langCommand.execute("res:paplj.full");
+        String expected = "Loaded language lang";
+        langCommand.execute("res:paplj.full").accept(display);
+        verify(display).displayMessage(captor.capture());
         verify(invoker, times(1)).resetCommands();
         verify(invoker, atLeast(1)).addCommand(any(), any());
-        verify(messageHook, times(1)).accept(any());
+        assertEquals(expected, captor.getValue().toString());
     }
 
     /**
@@ -159,12 +176,15 @@ public class LanguageCommandTest {
     public void testExecuteAnalyzed() throws MetaborgException {
         Iterable<ILanguageDiscoveryRequest> langrequest = any();
         when(langDiscoveryService.discover(langrequest)).thenReturn(Lists.newArrayList(langcomp));
+        when(menuService.menuItems(any())).thenReturn(Lists.newArrayList());
         when(lang.hasFacet(AnalysisFacet.class)).thenReturn(true);
 
-        langCommand.execute("res:paplj.full");
+        String expected = "Loaded language lang";
+        langCommand.execute("res:paplj.full").accept(display);
+        verify(display).displayMessage(captor.capture());
         verify(invoker, times(1)).resetCommands();
         verify(invoker, atLeast(1)).addCommand(any(), any());
-        verify(messageHook, times(1)).accept(any());
+        assertEquals(expected, captor.getValue().toString());
     }
 
 }

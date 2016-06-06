@@ -1,9 +1,9 @@
 package org.metaborg.spoofax.shell.invoker;
 
-import java.util.Arrays;
 import java.util.Map;
 
 import org.metaborg.core.MetaborgException;
+import org.metaborg.spoofax.shell.client.hooks.IHook;
 import org.metaborg.spoofax.shell.commands.IReplCommand;
 
 /**
@@ -33,23 +33,24 @@ public interface ICommandInvoker {
      *
      * @param optionallyPrefixedCommandName
      *            The name of the {@link IReplCommand} to be executed.
+     * @return The result of the execution.
      * @throws CommandNotFoundException
      *             When the command could not be found.
      * @throws MetaborgException
      *             When something goes wrong during execution
      */
-    default void execute(String optionallyPrefixedCommandName)
+    default IHook execute(String optionallyPrefixedCommandName)
         throws CommandNotFoundException, MetaborgException {
         if (optionallyPrefixedCommandName.startsWith(commandPrefix())) {
             String[] split = optionallyPrefixedCommandName.split("\\s+", 2);
             String commandName = split[0].substring(commandPrefix().length());
-            String[] argument =
-                split.length > 1 ? Arrays.copyOfRange(split, 1, split.length) : new String[0];
-            commandFromName(commandName).execute(argument);
-        } else {
-            // FIXME: create sensible way to set default
-            commandFromName("eval").execute(optionallyPrefixedCommandName);
+            String argument = split.length > 1 ? split[1] : "";
+
+            return commandFromName(commandName).execute(argument);
         }
+        // FIXME: create sensible way to set default
+        // return commandFromName("eval").execute(optionallyPrefixedCommandName);
+        return null;
     }
 
     /**

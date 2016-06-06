@@ -7,11 +7,11 @@ import org.apache.commons.vfs2.FileObject;
 import org.metaborg.core.context.IContext;
 import org.metaborg.core.messages.IMessage;
 import org.metaborg.core.unit.IUnit;
-import org.metaborg.spoofax.shell.commands.SpoofaxCommand;
+import org.metaborg.spoofax.shell.commands.AbstractSpoofaxCommand;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 /**
- * Represents an {@link ISpoofaxResult} as returned by the {@link SpoofaxCommand} (TODO).
+ * Represents an {@link ISpoofaxResult} as returned by the {@link AbstractSpoofaxCommand} (TODO).
  * Wraps Spoofax {@link IUnit} of various types.
  * @param <T> the wrapped subtype of {@link IUnit}
  */

@@ -3,11 +3,11 @@ package org.metaborg.spoofax.shell.output;
 import org.apache.commons.vfs2.FileObject;
 import org.metaborg.core.unit.IUnit;
 import org.metaborg.spoofax.core.stratego.IStrategoCommon;
-import org.metaborg.spoofax.shell.commands.SpoofaxCommand;
+import org.metaborg.spoofax.shell.commands.AbstractSpoofaxCommand;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 /**
- * Represents an {@link AbstractResult} as returned by the {@link SpoofaxCommand}.
+ * Represents an {@link AbstractResult} as returned by the {@link AbstractSpoofaxCommand}.
  * Wraps Spoofax {@link IUnit} of various types.
  * @param <T> the wrapped subtype of {@link IUnit}
  */

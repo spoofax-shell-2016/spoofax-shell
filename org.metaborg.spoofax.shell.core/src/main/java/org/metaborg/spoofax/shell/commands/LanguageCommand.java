@@ -1,6 +1,7 @@
 package org.metaborg.spoofax.shell.commands;
 
 import java.util.Set;
+import java.util.function.Function;
 
 import org.apache.commons.vfs2.FileObject;
 import org.metaborg.core.MetaborgException;
@@ -10,12 +11,14 @@ import org.metaborg.core.language.ILanguageDiscoveryRequest;
 import org.metaborg.core.language.ILanguageDiscoveryService;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.LanguageUtils;
+import org.metaborg.core.menu.IMenuService;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.resource.IResourceService;
-import org.metaborg.spoofax.shell.hooks.IMessageHook;
-import org.metaborg.spoofax.shell.invoker.ICommandFactory;
+import org.metaborg.spoofax.shell.client.IDisplay;
+import org.metaborg.spoofax.shell.client.hooks.IHook;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
 import org.metaborg.spoofax.shell.output.StyledText;
+import org.metaborg.spoofax.shell.output.TransformResult;
 
 import com.google.inject.Inject;
 
@@ -23,10 +26,9 @@ import com.google.inject.Inject;
  * Represents a command that loads a Spoofax language.
  */
 public class LanguageCommand implements IReplCommand {
-
-    private final IMessageHook messageHook;
     private final ILanguageDiscoveryService langDiscoveryService;
     private final IResourceService resourceService;
+    private final IMenuService menuService;
     private final ICommandInvoker invoker;
     private final IProject project;
     private ILanguageImpl lang;
@@ -34,24 +36,25 @@ public class LanguageCommand implements IReplCommand {
     /**
      * Instantiate a {@link LanguageCommand}. Loads all commands applicable to a lanugage.
      *
-     * @param messageHook
-     *            the {@link IMessageHook} to send messages to.
      * @param langDiscoveryService
      *            the {@link ILanguageDiscoveryService}
      * @param resourceService
      *            the {@link IResourceService}
      * @param invoker
      *            the {@link ICommandInvoker}
+     * @param menuService
+     *            the {@link IMenuService}
      * @param project
      *            the associated {@link IProject}
      */
     @Inject
-    public LanguageCommand(IMessageHook messageHook, ILanguageDiscoveryService langDiscoveryService,
-                           IResourceService resourceService, ICommandInvoker invoker,
+    public LanguageCommand(ILanguageDiscoveryService langDiscoveryService,
+                           IResourceService resourceService, IMenuService menuService,
+                           ICommandInvoker invoker,
                            IProject project) { // FIXME: don't use the hardcoded @Provides
-        this.messageHook = messageHook;
         this.langDiscoveryService = langDiscoveryService;
         this.resourceService = resourceService;
+        this.menuService = menuService;
         this.invoker = invoker;
         this.project = project;
     }
@@ -61,13 +64,7 @@ public class LanguageCommand implements IReplCommand {
         return "Load a language from a path.";
     }
 
-    /**
-     * Load a {@link ILanguageImpl} from a {@link FileObject}.
-     * @param langloc the {@link FileObject} containing the {@link ILanguageImpl}
-     * @return        the {@link ILanguageImpl}
-     * @throws MetaborgException when loading fails
-     */
-    public ILanguageImpl load(FileObject langloc) throws MetaborgException {
+    private ILanguageImpl load(FileObject langloc) throws MetaborgException {
         Iterable<ILanguageDiscoveryRequest> requests = langDiscoveryService.request(langloc);
         Iterable<ILanguageComponent> components = langDiscoveryService.discover(requests);
 
@@ -81,25 +78,35 @@ public class LanguageCommand implements IReplCommand {
     }
 
     @Override
-    public void execute(String... args) throws MetaborgException {
-        if (args.length == 0 || args.length > 1) {
+    public IHook execute(String arg) throws MetaborgException {
+        if (arg == null || arg.length() == 0) {
             throw new MetaborgException("Syntax: :lang <path>");
         }
 
-        FileObject resolve = resourceService.resolve("zip:" + args[0] + "!/");
+        FileObject resolve = resourceService.resolve("zip:" + arg + "!/");
         ILanguageImpl lang = load(resolve);
         boolean analyze = lang.hasFacet(AnalyzerFacet.class);
 
-        invoker.resetCommands();
-        ICommandFactory commandFactory = invoker.getCommandFactory();
-        invoker.addCommand("parse", commandFactory.createParse(project, lang));
-        invoker.addCommand("transform", commandFactory.createTransform(project, lang, analyze));
+        CommandBuilder builder = invoker.getCommandFactory().createBuilder(project, lang);
 
+        invoker.resetCommands();
+        invoker.addCommand("parse", builder.build(builder.parse(), "Parse the expression"));
         if (analyze) {
-            invoker.addCommand("analyze", commandFactory.createAnalyze(project, lang));
+            invoker.addCommand("analyze", builder.build(builder.analyze(), "Analyze the expression"));
         }
 
-        messageHook.accept(new StyledText("Loaded language" + lang));
+        new TransformVisitor(menuService).getActions(lang).forEach((key, action) -> {
+            Function<String, TransformResult> result;
+            if (analyze) {
+                result = builder.transformAnalyzed(action);
+            } else {
+                result = builder.transformParsed(action);
+            }
+            invoker.addCommand(key, builder.build(result, action.name()));
+        });
+
+        return (IDisplay display) -> display
+            .displayMessage(new StyledText("Loaded language " + lang));
     }
 
 }
