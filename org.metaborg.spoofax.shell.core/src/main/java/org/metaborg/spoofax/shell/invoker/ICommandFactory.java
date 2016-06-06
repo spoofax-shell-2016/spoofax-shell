@@ -6,6 +6,7 @@ import org.metaborg.core.project.IProject;
 import org.metaborg.spoofax.shell.commands.AbstractSpoofaxCommand;
 import org.metaborg.spoofax.shell.commands.AnalyzeCommand;
 import org.metaborg.spoofax.shell.commands.AnalyzedTransformCommand;
+import org.metaborg.spoofax.shell.commands.CommandBuilder;
 import org.metaborg.spoofax.shell.commands.ParseCommand;
 import org.metaborg.spoofax.shell.commands.ParsedTransformCommand;
 
@@ -62,4 +63,6 @@ public interface ICommandFactory {
      */
     AnalyzedTransformCommand createAnalyzedTransform(IProject project, ILanguageImpl lang,
                                                      ITransformAction action);
+
+    CommandBuilder createBuilder(IProject project, ILanguageImpl lang);
 }

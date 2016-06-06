@@ -11,7 +11,7 @@ import com.google.inject.Provider;
 /**
  * Exit the REPL.
  */
-public class ExitCommand implements IReplCommand<Void> {
+public class ExitCommand implements IReplCommand {
 
     private final Provider<ConsoleRepl> replProvider;
 
@@ -32,7 +32,7 @@ public class ExitCommand implements IReplCommand<Void> {
     }
 
     @Override
-    public IHook execute(Void arg) {
+    public IHook execute(String arg) {
         replProvider.get().setRunning(false);
         return (IDisplay display) -> {
         };

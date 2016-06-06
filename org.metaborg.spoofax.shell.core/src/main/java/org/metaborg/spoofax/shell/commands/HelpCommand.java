@@ -17,7 +17,7 @@ import com.google.inject.Inject;
 /**
  * Shows descriptions of all commands, or one command if given.
  */
-public class HelpCommand implements IReplCommand<String> {
+public class HelpCommand implements IReplCommand {
     private final ICommandInvoker invoker;
 
     /**
@@ -41,7 +41,7 @@ public class HelpCommand implements IReplCommand<String> {
      * @param commands  the {@link IReplCommand} map
      * @return a formatted string
      */
-    public String formathelp(Map<String, IReplCommand<?>> commands) {
+    public String formathelp(Map<String, IReplCommand> commands) {
         int longestCommand = commands.keySet().stream().mapToInt(a -> a.length()).max().orElse(0);
         String format = "%-" + longestCommand + "s %s";
 
@@ -59,9 +59,9 @@ public class HelpCommand implements IReplCommand<String> {
     @Override
     public IHook execute(String arg) throws MetaborgException {
         try {
-            Map<String, IReplCommand<?>> commands;
+            Map<String, IReplCommand> commands;
             if (arg.length() > 0) {
-                IReplCommand<?> command = invoker.commandFromName(arg);
+                IReplCommand command = invoker.commandFromName(arg);
                 commands = Collections.singletonMap(arg, command);
             } else {
                 commands = invoker.getCommands();

@@ -151,8 +151,8 @@ public class TerminalUserInterface implements IEditor, IDisplay {
 
     @Override
     public void displayMessage(StyledText message) {
-        err.println(ansi(message));
-        err.flush();
+        out.println(ansi(message));
+        out.flush();
     }
 
     private <T> void optional(T t, Function<T, Boolean> check, Consumer<T> accept) {

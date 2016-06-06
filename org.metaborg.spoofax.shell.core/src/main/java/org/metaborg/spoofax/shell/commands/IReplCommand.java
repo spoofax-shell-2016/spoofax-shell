@@ -7,11 +7,8 @@ import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
 /**
  * Interface for REPL commands. Used together with {@link ICommandInvoker}, instances of
  * implementors of this interface can be bound to names and descriptions.
- *
- * @param <A>
- *            The argument type of the {@link #execute(A)} method.
  */
-public interface IReplCommand<A> {
+public interface IReplCommand {
 
     /**
      * @return The description of this command.
@@ -27,5 +24,5 @@ public interface IReplCommand<A> {
      * @throws MetaborgException
      *             When something goes wrong during execution.
      */
-    IHook execute(A arg) throws MetaborgException;
+    IHook execute(String arg) throws MetaborgException;
 }

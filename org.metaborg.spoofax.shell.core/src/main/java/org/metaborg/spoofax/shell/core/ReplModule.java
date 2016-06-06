@@ -12,6 +12,7 @@ import org.metaborg.spoofax.core.SpoofaxModule;
 import org.metaborg.spoofax.shell.commands.HelpCommand;
 import org.metaborg.spoofax.shell.commands.IReplCommand;
 import org.metaborg.spoofax.shell.commands.LanguageCommand;
+import org.metaborg.spoofax.shell.functions.IFunctionFactory;
 import org.metaborg.spoofax.shell.invoker.ICommandFactory;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
 import org.metaborg.spoofax.shell.invoker.SpoofaxCommandInvoker;
@@ -20,7 +21,6 @@ import org.metaborg.spoofax.shell.output.IResultFactory;
 import com.google.common.io.Files;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.MapBinder;
 
@@ -30,19 +30,13 @@ import com.google.inject.multibindings.MapBinder;
  */
 public abstract class ReplModule extends SpoofaxModule {
 
-    protected MapBinder<String, IReplCommand<?>> commandBinder;
+    protected MapBinder<String, IReplCommand> commandBinder;
 
     /**
      * Binds the default commands.
      */
     protected void configureCommands() {
-        commandBinder =
-            // @formatter:off
-            MapBinder.newMapBinder(binder(),
-                                   new TypeLiteral<String>() { },
-                                   new TypeLiteral<IReplCommand<?>>() { }
-                                  );
-            // @formatter:on
+        commandBinder = MapBinder.newMapBinder(binder(), String.class, IReplCommand.class);
         commandBinder.addBinding("help").to(HelpCommand.class).in(Singleton.class);
         commandBinder.addBinding("load").to(LanguageCommand.class).in(Singleton.class);
 
@@ -64,6 +58,7 @@ public abstract class ReplModule extends SpoofaxModule {
 
         install(new FactoryModuleBuilder().build(ICommandFactory.class));
         install(new FactoryModuleBuilder().build(IResultFactory.class));
+        install(new FactoryModuleBuilder().build(IFunctionFactory.class));
     }
 
     /**
