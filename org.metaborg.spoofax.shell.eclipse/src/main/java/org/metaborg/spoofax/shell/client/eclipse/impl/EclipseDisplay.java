@@ -18,7 +18,8 @@ import org.metaborg.spoofax.shell.client.eclipse.ColorManager;
 import org.metaborg.spoofax.shell.output.ISpoofaxResult;
 import org.metaborg.spoofax.shell.output.StyledText;
 
-import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 /**
  * An Eclipse-based {@link IDisplay}, which uses a {@link TextViewer} to display results and error
@@ -39,8 +40,8 @@ public class EclipseDisplay implements IDisplay {
      * @param colorManager
      *            The {@link ColorManager} to retrieve colors from.
      */
-    @Inject
-    public EclipseDisplay(Composite parent, ColorManager colorManager) {
+    @AssistedInject
+    public EclipseDisplay(ColorManager colorManager, @Assisted Composite parent) {
         this.output = new TextViewer(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
         this.output.getTextWidget().setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         this.output.getTextWidget().setAlwaysShowScrollBars(false);
