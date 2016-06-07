@@ -1,6 +1,7 @@
 package org.metaborg.spoofax.shell.client;
 
 import org.metaborg.core.MetaborgException;
+import org.metaborg.spoofax.shell.client.IHook;
 import org.metaborg.spoofax.shell.commands.IReplCommand;
 import org.metaborg.spoofax.shell.invoker.CommandNotFoundException;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
@@ -22,17 +23,20 @@ public interface IRepl {
      *
      * @param input
      *            The input to send for evaluation.
+     * @return An {@link IHook} to process the result of the evaluation, or {@code null} when an
+     *         empty input would be executed.
      * @throws MetaborgException
      *             When something goes wrong during execution.
      * @throws CommandNotFoundException
      *             When the command could not be found.
      */
-    default void eval(String input) throws MetaborgException, CommandNotFoundException {
+    // TODO: return Optional?
+    default IHook eval(String input) throws MetaborgException, CommandNotFoundException {
         input = input.trim();
         if (input.length() == 0) {
-            return;
+            return null;
         }
-        getInvoker().execute(input);
+        return getInvoker().execute(input);
     }
 
     /**
