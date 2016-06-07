@@ -1,14 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+
+    <!-- The main REPL UI contribution. -->
     <extension point="org.eclipse.ui.views">
         <category id="org.metaborg.spoofax.shell.eclipse"
-                name="Spoofax">
-        </category>
+                name="Spoofax"/>
         <view id="org.metaborg.spoofax.shell.eclipse.view"
             name="REPL"
             icon="icons/icon.gif"
         category="org.metaborg.spoofax.shell.eclipse"
            class="org.metaborg.spoofax.shell.client.eclipse.ReplView"/>
     </extension>
+
+    <!-- "Run REPL" command -->
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.metaborg.spoofax.shell.client.eclipse.handlers.meta.run" name="Run in REPL"/>
+    </extension>
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.metaborg.spoofax.shell.client.eclipse.handlers.meta.run"
+                     class="org.metaborg.spoofax.shell.client.eclipse.handlers.MetaRunHandler"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <!-- Menu item in "Spoofax (meta)" submenu. -->
+        <menuContribution locationURI="menu:org.metaborg.spoofax.eclipse.meta.menu.main">
+            <command commandId="org.metaborg.spoofax.shell.client.eclipse.handlers.meta.run"
+                         label="Run in REPL"
+                       tooltip="Launch the current language in the REPL">
+                <visibleWhen>
+                    <reference definitionId="org.metaborg.spoofax.eclipse.meta.expression.hasnature"/>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+        <!-- Menu item in the project context menu (package- and project explorer). -->
+        <menuContribution locationURI="popup:org.metaborg.spoofax.eclipse.meta.menu.project">
+            <command commandId="org.metaborg.spoofax.shell.client.eclipse.handlers.meta.run"
+                         label="Run in REPL"
+                       tooltip="Launch the current language in the REPL">
+                <visibleWhen>
+                    <reference definitionId="org.metaborg.spoofax.eclipse.meta.expression.hasnature"/>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+    </extension>
+
 </plugin>

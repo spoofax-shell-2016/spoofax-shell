@@ -7,9 +7,8 @@ import org.eclipse.ui.part.ViewPart;
 import org.metaborg.spoofax.shell.client.eclipse.impl.EclipseDisplay;
 import org.metaborg.spoofax.shell.client.eclipse.impl.EclipseEditor;
 import org.metaborg.spoofax.shell.client.eclipse.impl.EclipseRepl;
-import org.metaborg.spoofax.shell.client.eclipse.impl.EclipseReplModule;
+import org.metaborg.spoofax.shell.client.eclipse.impl.IWidgetFactory;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 /**
@@ -18,31 +17,41 @@ import com.google.inject.Injector;
  * Eclipse as a singleton, at most one ReplView will be active at any given time.
  */
 public class ReplView extends ViewPart {
+    public static final String ID = Activator.getPluginID() + ".view";
     private static final int DISPLAYWEIGHT = 5;
     private static final int EDITORWEIGHT = 1;
-    private Composite page;
+    private EclipseRepl repl;
     private EclipseEditor editor;
     private ColorManager colorManager;
 
     @Override
     public void createPartControl(Composite parent) {
-        this.page = new SashForm(parent, SWT.VERTICAL | SWT.LEFT_TO_RIGHT);
-
-        // TODO: set Injector in Activator.class such that it can be accessed from elsewhere?
-        Injector injector = Guice.createInjector(new EclipseReplModule(page));
+        Injector injector = Activator.getInjector();
+        SashForm page = new SashForm(parent, SWT.VERTICAL | SWT.LEFT_TO_RIGHT);
 
         // Create the display first so it appears on top in the sash.
-        injector.getInstance(EclipseDisplay.class);
-        this.editor = injector.getInstance(EclipseEditor.class);
+        IWidgetFactory factory = injector.getInstance(IWidgetFactory.class);
+        EclipseDisplay display = factory.createDisplay(page);
+        this.editor = factory.createEditor(page);
+
         // Must be after the instantiation of the two widgets.
-        ((SashForm) this.page).setWeights(new int[] { DISPLAYWEIGHT, EDITORWEIGHT });
+        page.setWeights(new int[] { DISPLAYWEIGHT, EDITORWEIGHT });
 
         // Instantiate the REPL and add it as observer of the editor.
-        EclipseRepl repl = injector.getInstance(EclipseRepl.class);
-        this.editor.asObservable().subscribe(repl);
+        this.repl = factory.createRepl(display);
+        this.editor.asObservable().subscribe(this.repl);
 
         // Retrieve the color manager so that it can be disposed of when the view is closed.
         this.colorManager = injector.getInstance(ColorManager.class);
+    }
+
+    /**
+     * Return the currently active {@link EclipseRepl}.
+     *
+     * @return The currently active {@link EclipseRepl.
+     */
+    public EclipseRepl getRepl() {
+        return this.repl;
     }
 
     @Override
