@@ -9,12 +9,13 @@ import org.metaborg.core.context.IContextService;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.project.IProject;
 import org.metaborg.spoofax.core.shell.ShellFacet;
+import org.metaborg.spoofax.shell.client.IHook;
 import org.metaborg.spoofax.shell.core.IEvaluationStrategy;
-import org.metaborg.spoofax.shell.hooks.IResultHook;
 import org.metaborg.spoofax.shell.invoker.ICommandFactory;
 import org.metaborg.spoofax.shell.output.AnalyzeResult;
 import org.metaborg.spoofax.shell.output.EvaluateResult;
 import org.metaborg.spoofax.shell.output.IResultFactory;
+import org.metaborg.spoofax.shell.output.ISpoofaxResult;
 import org.metaborg.spoofax.shell.output.InputResult;
 import org.metaborg.spoofax.shell.output.ParseResult;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -23,19 +24,16 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
 /**
- * Represents an evaluate command sent to Spoofax.
+ * Evaluate an expression in some language.
  */
-public class EvaluateCommand extends SpoofaxCommand {
+public class EvaluateCommand extends AbstractSpoofaxCommand {
     private static final String DESCRIPTION = "Evaluate an expression";
-
-    private IContextService contextService;
-    private ParseCommand parseCommand;
-    private AnalyzeCommand analyzeCommand;
-    private IResultFactory unitFactory;
-
-    @Inject
-    private Map<String, IEvaluationStrategy> evaluationStrategies;
-    private EvaluationInvocationStrategy invocationStrategy;
+    private final Map<String, IEvaluationStrategy> evaluationStrategies;
+    private final EvaluationInvocationStrategy invocationStrategy;
+    private final IContextService contextService;
+    private final ParseCommand parseCommand;
+    private final AnalyzeCommand analyzeCommand;
+    private final IResultFactory resultFactory;
 
     /**
      * Interface for what happens before evaluation of parsed input (i.e. either analyze or evaluate
@@ -57,12 +55,12 @@ public class EvaluateCommand extends SpoofaxCommand {
             throws MetaborgException {
             AnalyzeResult analyzed = analyzeCommand.analyze(parsed);
             IStrategoTerm ast = evalStrategy.evaluate(analyzed, context);
-            return unitFactory.createEvaluateResult(analyzed, ast);
+            return resultFactory.createEvaluateResult(analyzed, ast);
         }
     }
 
     /**
-     * Analyze before invoking the evaluation strategy.
+     * Do not analyze before invoking the evaluation strategy.
      */
     private class NonAnalyzedInvocationStrategy implements EvaluationInvocationStrategy {
         @Override
@@ -70,36 +68,43 @@ public class EvaluateCommand extends SpoofaxCommand {
                                                 IEvaluationStrategy evalStrategy)
             throws MetaborgException {
             IStrategoTerm ast = evalStrategy.evaluate(parsed, context);
-            return unitFactory.createEvaluateResult(parsed, ast);
+            return resultFactory.createEvaluateResult(parsed, ast);
         }
     }
 
     /**
      * Instantiate an {@link EvaluateCommand}.
      *
+     * @param evaluationStrategies
+     *            All possible evaluationStrategies, such that the command can detect how to
+     *            evaluate.
      * @param contextService
-     *            The {@link IContextService}.
+     *            The {@link IContextService} to retrieve the {@link IContext} in which this command
+     *            should operate.
      * @param commandFactory
      *            The {@link ICommandFactory} for creating delegate commands.
-     * @param resultHook
-     *            Called upon success of evaluation of this command.
+     * @param resultFactory
+     *            The {@link ResulFactory} to create {@link ISpoofaxResult results}.
      * @param project
      *            The project in which this command should operate.
      * @param lang
      *            The language to which this command applies.
+     * @param analyzed
+     *            Whether this command should analyze the input before evaluating it.
      */
     @Inject
-    // CHECKSTYLE.OFF: |
-    public EvaluateCommand(IContextService contextService, ICommandFactory commandFactory,
-                           IResultFactory unitFactory, IResultHook resultHook,
-                           @Assisted IProject project, @Assisted ILanguageImpl lang,
-                           @Assisted boolean analyzed) {
-        // CHECKSTYLE.ON: |
-        super(resultHook, unitFactory, project, lang);
+    // CHECKSTYLE.OFF: ParameterNumber
+    public EvaluateCommand(Map<String, IEvaluationStrategy> evaluationStrategies,
+                           IContextService contextService, ICommandFactory commandFactory,
+                           IResultFactory resultFactory, @Assisted IProject project,
+                           @Assisted ILanguageImpl lang, @Assisted boolean analyzed) {
+        // CHECKSTYLE.ON: ParameterNumber
+        super(resultFactory, project, lang);
+        this.evaluationStrategies = evaluationStrategies;
         this.contextService = contextService;
         this.parseCommand = commandFactory.createParse(project, lang);
         this.analyzeCommand = commandFactory.createAnalyze(project, lang);
-        this.unitFactory = unitFactory;
+        this.resultFactory = resultFactory;
 
         this.invocationStrategy =
             analyzed ? new AnalyzedInvocationStrategy() : new NonAnalyzedInvocationStrategy();
@@ -119,12 +124,12 @@ public class EvaluateCommand extends SpoofaxCommand {
     }
 
     @Override
-    public void execute(String... args) throws MetaborgException {
+    public IHook execute(String... args) throws MetaborgException {
         try {
-            InputResult input = unitFactory.createInputResult(lang, write(args[0]), args[0]);
+            InputResult input = resultFactory.createInputResult(lang, write(args[0]), args[0]);
             ParseResult parse = parseCommand.parse(input);
             EvaluateResult result = this.evaluate(parse);
-            resultHook.accept(result);
+            return (display) -> display.displayResult(result);
         } catch (IOException e) {
             throw new MetaborgException("Cannot write to temporary source file.");
         }

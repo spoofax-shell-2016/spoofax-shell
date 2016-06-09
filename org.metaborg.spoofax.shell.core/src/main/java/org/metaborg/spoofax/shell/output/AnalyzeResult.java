@@ -9,26 +9,27 @@ import org.metaborg.core.context.IContext;
 import org.metaborg.core.messages.IMessage;
 import org.metaborg.spoofax.core.stratego.IStrategoCommon;
 import org.metaborg.spoofax.core.unit.ISpoofaxAnalyzeUnit;
-import org.metaborg.spoofax.shell.commands.SpoofaxCommand;
+import org.metaborg.spoofax.shell.commands.AnalyzeCommand;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 /**
- * Represents an {@link AnalyzeResult} as returned by the {@link SpoofaxCommand}.
- * Wraps a {@link ISpoofaxAnalyzeUnit}.
+ * Represents the result of the {@link AnalyzeCommand}.
  */
 public class AnalyzeResult extends AbstractSpoofaxResult<ISpoofaxAnalyzeUnit> {
 
     /**
-     * Create a {@link AnalyzeResult}.
-     * @param common  the {@link IStrategoCommon} service
-     * @param unit    the wrapped {@link ISpoofaxAnalyzeUnit}
+     * Instantiate a new AnalyzeResult.
+     *
+     * @param common
+     *            The {@link IStrategoCommon} service, used to pretty print {@link IStrategoTerm}s.
+     * @param unit
+     *            The wrapped {@link ISpoofaxAnalyzeUnit}.
      */
     @AssistedInject
-    public AnalyzeResult(IStrategoCommon common,
-                         @Assisted ISpoofaxAnalyzeUnit unit) {
+    public AnalyzeResult(IStrategoCommon common, @Assisted ISpoofaxAnalyzeUnit unit) {
         super(common, unit);
     }
 

@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.metaborg.core.MetaborgException;
-import org.metaborg.spoofax.shell.hooks.IMessageHook;
+import org.metaborg.spoofax.shell.client.IHook;
 import org.metaborg.spoofax.shell.invoker.CommandNotFoundException;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
 import org.metaborg.spoofax.shell.output.StyledText;
@@ -14,37 +14,38 @@ import org.metaborg.spoofax.shell.output.StyledText;
 import com.google.inject.Inject;
 
 /**
- * Shows descriptions of all commands, or one command if given.
+ * This command prints help messages in two ways:
+ * <p>
+ * <ol>
+ * <li>It lists all the available commands with their description,</li>
+ * <li>It lists a single command with its description.</li>
+ * </ol>
+ * <p>
+ * For the first, use {@code :help}. For the second, use {@code :help <commandname>}.
  */
 public class HelpCommand implements IReplCommand {
-    private final IMessageHook messageHook;
+    private static final String DESCRIPTION = "Display help messages\nEither use `:help` to list "
+                                              + "all available commands, or `:help <command>` to "
+                                              + "list a single command";
     private final ICommandInvoker invoker;
 
     /**
-     * Instantiates a new HelpCommand.
+     * Instantiate a new HelpCommand.
      *
-     * @param messageHook
-     *            The {@link IMessageHook} to send the help message to.
      * @param invoker
-     *            The {@link ICommandInvoker}.
+     *            The {@link ICommandInvoker} to retrieve the commands from.
      */
     @Inject
-    public HelpCommand(IMessageHook messageHook, ICommandInvoker invoker) {
-        this.messageHook = messageHook;
+    public HelpCommand(ICommandInvoker invoker) {
         this.invoker = invoker;
     }
 
     @Override
     public String description() {
-        return "You just used it.";
+        return DESCRIPTION;
     }
 
-    /**
-     * Formats the description of a {@link IReplCommand} map.
-     * @param commands  the {@link IReplCommand} map
-     * @return a formatted string
-     */
-    public String formathelp(Map<String, IReplCommand> commands) {
+    private String formathelp(Map<String, IReplCommand> commands) {
         int longestCommand = commands.keySet().stream().mapToInt(a -> a.length()).max().orElse(0);
         String format = "%-" + longestCommand + "s %s";
 
@@ -60,7 +61,7 @@ public class HelpCommand implements IReplCommand {
     }
 
     @Override
-    public void execute(String... args) throws MetaborgException {
+    public IHook execute(String... args) throws MetaborgException {
         try {
             Map<String, IReplCommand> commands;
             if (args.length > 0) {
@@ -70,7 +71,8 @@ public class HelpCommand implements IReplCommand {
                 commands = invoker.getCommands();
             }
 
-            messageHook.accept(new StyledText(formathelp(commands)));
+            return (display) -> display
+                .displayMessage(new StyledText(formathelp(commands)));
         } catch (CommandNotFoundException e) {
             throw new MetaborgException("Command not found: " + e.commandName());
         }

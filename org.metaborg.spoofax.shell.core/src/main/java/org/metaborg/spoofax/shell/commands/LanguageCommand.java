@@ -12,7 +12,7 @@ import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.LanguageUtils;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.resource.IResourceService;
-import org.metaborg.spoofax.shell.hooks.IMessageHook;
+import org.metaborg.spoofax.shell.client.IHook;
 import org.metaborg.spoofax.shell.invoker.ICommandFactory;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
 import org.metaborg.spoofax.shell.output.StyledText;
@@ -20,11 +20,16 @@ import org.metaborg.spoofax.shell.output.StyledText;
 import com.google.inject.Inject;
 
 /**
- * Represents a command that loads a Spoofax language.
+ * This command loads a Spoofax language.
+ * <p>
+ * It detects the relevant steps for the found language and binds the appropriate commands for these
+ * steps in the {@link ICommandInvoker}.
  */
 public class LanguageCommand implements IReplCommand {
-
-    private final IMessageHook messageHook;
+    private static final String DESCRIPTION = "Load a language from a path.";
+    private static final String SYNTAX = "Syntax: :lang <path>\nThe path can either be a zip file "
+                                         + "(with extensions .zip or .full), or a top-level "
+                                         + "language project directory";
     private final ILanguageDiscoveryService langDiscoveryService;
     private final IResourceService resourceService;
     private final ICommandInvoker invoker;
@@ -32,24 +37,22 @@ public class LanguageCommand implements IReplCommand {
     private ILanguageImpl lang;
 
     /**
-     * Instantiate a {@link LanguageCommand}. Loads all commands applicable to a lanugage.
+     * Instantiate a new LanguageCommand. This also instantiates all commands applicable to the
+     * found language.
      *
-     * @param messageHook
-     *            the {@link IMessageHook} to send messages to.
      * @param langDiscoveryService
-     *            the {@link ILanguageDiscoveryService}
+     *            The {@link ILanguageDiscoveryService} to find language implementations.
      * @param resourceService
-     *            the {@link IResourceService}
+     *            The {@link IResourceService} to resolve language files on disk.
      * @param invoker
-     *            the {@link ICommandInvoker}
+     *            The {@link ICommandInvoker} to bind the commands appropriate for this language.
      * @param project
-     *            the associated {@link IProject}
+     *            The associated {@link IProject}.
      */
     @Inject
-    public LanguageCommand(IMessageHook messageHook, ILanguageDiscoveryService langDiscoveryService,
+    public LanguageCommand(ILanguageDiscoveryService langDiscoveryService,
                            IResourceService resourceService, ICommandInvoker invoker,
                            IProject project) { // FIXME: don't use the hardcoded @Provides
-        this.messageHook = messageHook;
         this.langDiscoveryService = langDiscoveryService;
         this.resourceService = resourceService;
         this.invoker = invoker;
@@ -58,14 +61,17 @@ public class LanguageCommand implements IReplCommand {
 
     @Override
     public String description() {
-        return "Load a language from a path.";
+        return DESCRIPTION;
     }
 
     /**
      * Load a {@link ILanguageImpl} from a {@link FileObject}.
-     * @param langloc the {@link FileObject} containing the {@link ILanguageImpl}
-     * @return        the {@link ILanguageImpl}
-     * @throws MetaborgException when loading fails
+     *
+     * @param langloc
+     *            The {@link FileObject} containing the {@link ILanguageImpl}.
+     * @return The loaded {@link ILanguageImpl}.
+     * @throws MetaborgException
+     *             When loading fails.
      */
     public ILanguageImpl load(FileObject langloc) throws MetaborgException {
         Iterable<ILanguageDiscoveryRequest> requests = langDiscoveryService.request(langloc);
@@ -80,14 +86,22 @@ public class LanguageCommand implements IReplCommand {
         return lang;
     }
 
+    // FIXME: there really should be a better way to go about this. Perhaps Apache Tika?
+    private FileObject resolveLanguage(String path) {
+        String extension = resourceService.resolveToName(path).getExtension();
+        if (extension.equals("zip") || extension.equals("full")) {
+            return resourceService.resolve("zip:" + path + "!/");
+        }
+        return resourceService.resolve(path);
+    }
+
     @Override
-    public void execute(String... args) throws MetaborgException {
+    public IHook execute(String... args) throws MetaborgException {
         if (args.length == 0 || args.length > 1) {
-            throw new MetaborgException("Syntax: :lang <path>");
+            throw new MetaborgException(SYNTAX);
         }
 
-        FileObject resolve = resourceService.resolve("zip:" + args[0] + "!/");
-        ILanguageImpl lang = load(resolve);
+        ILanguageImpl lang = load(resolveLanguage(args[0]));
         boolean analyze = lang.hasFacet(AnalyzerFacet.class);
 
         invoker.resetCommands();
@@ -101,7 +115,8 @@ public class LanguageCommand implements IReplCommand {
 
         invoker.addCommand("eval", commandFactory.createEvaluate(project, lang, analyze));
 
-        messageHook.accept(new StyledText("Loaded language" + lang));
+        return (display) -> display
+            .displayMessage(new StyledText("Loaded language " + lang));
     }
 
 }

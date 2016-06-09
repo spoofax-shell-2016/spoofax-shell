@@ -13,8 +13,9 @@ import org.metaborg.spoofax.core.syntax.ISpoofaxSyntaxService;
 import org.metaborg.spoofax.core.syntax.JSGLRParserConfiguration;
 import org.metaborg.spoofax.core.syntax.SpoofaxSyntaxService;
 import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
-import org.metaborg.spoofax.shell.hooks.IResultHook;
+import org.metaborg.spoofax.shell.client.IHook;
 import org.metaborg.spoofax.shell.output.IResultFactory;
+import org.metaborg.spoofax.shell.output.ISpoofaxResult;
 import org.metaborg.spoofax.shell.output.InputResult;
 import org.metaborg.spoofax.shell.output.ParseResult;
 
@@ -22,32 +23,28 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
 /**
- * Represents a parse command sent to Spoofax.
+ * Parse an expression in some language.
  */
-public class ParseCommand extends SpoofaxCommand {
+public class ParseCommand extends AbstractSpoofaxCommand {
     private static final String DESCRIPTION = "Parse an expression.";
-
-    private ISpoofaxSyntaxService syntaxService;
+    private final ISpoofaxSyntaxService syntaxService;
 
     /**
-     * Instantiate a {@link ParseCommand}.
+     * Instantiate a new ParseCommand.
      *
      * @param syntaxService
-     *            The {@link SpoofaxSyntaxService}.
-     * @param resultHook
-     *            The {@link IResultHook} to send results of successful evaluations to.
+     *            The {@link SpoofaxSyntaxService} to parse the input.
      * @param resultFactory
-     *            The {@link IResultFactory}.
+     *            The {@link ResulFactory} to create {@link ISpoofaxResult results}.
      * @param project
      *            The project in which this command should operate.
      * @param lang
      *            The language to which this command applies.
      */
     @Inject
-    public ParseCommand(ISpoofaxSyntaxService syntaxService, IResultHook resultHook,
-                        IResultFactory resultFactory,
+    public ParseCommand(ISpoofaxSyntaxService syntaxService, IResultFactory resultFactory,
                         @Assisted IProject project, @Assisted ILanguageImpl lang) {
-        super(resultHook, resultFactory, project, lang);
+        super(resultFactory, project, lang);
         this.syntaxService = syntaxService;
     }
 
@@ -57,17 +54,19 @@ public class ParseCommand extends SpoofaxCommand {
     }
 
     /**
-     * Parses a program using the {@link ISpoofaxSyntaxService}.
+     * Parse an expression using the {@link ISpoofaxSyntaxService}.
      *
      * @param unit
-     *            the input for the program
-     * @return An {@link ISpoofaxParseUnit}.
+     *            The {@link InputResult} containing the input to parse.
+     * @return A {@link ParseResult}.
      * @throws MetaborgException
      *             When parsing fails.
      */
     public ParseResult parse(InputResult unit) throws MetaborgException {
         ISpoofaxParseUnit parse = syntaxService.parse(unit.unit());
         ParseResult result = resultFactory.createParseResult(parse);
+        // TODO: pass the result to the client instead of throwing an exception -- The client needs
+        // the result in order to do fancy stuff.
         if (!result.valid()) {
             throw new MetaborgException(result.messages().stream().map(IMessage::message)
                 .collect(Collectors.joining("\n")));
@@ -76,7 +75,7 @@ public class ParseCommand extends SpoofaxCommand {
     }
 
     @Override
-    public void execute(String... args) throws MetaborgException {
+    public IHook execute(String... args) throws MetaborgException {
         try {
             String source = args[0];
             FileObject file = write(args[0]);
@@ -85,10 +84,13 @@ public class ParseCommand extends SpoofaxCommand {
             InputResult input = resultFactory
                 .createInputResult(lang, file, source,
                                    new JSGLRParserConfiguration(shellFacet.getShellStartSymbol()));
+
             try {
-                resultHook.accept(parse(input));
+                ParseResult result = parse(input);
+                return (display) -> display.displayResult(result);
             } catch (MetaborgException e) {
-                resultHook.accept(parse(resultFactory.createInputResult(lang, file, source)));
+                ParseResult result = parse(resultFactory.createInputResult(lang, file, source));
+                return (display) -> display.displayResult(result);
             }
         } catch (IOException e) {
             throw new MetaborgException("Cannot write to temporary source file.");

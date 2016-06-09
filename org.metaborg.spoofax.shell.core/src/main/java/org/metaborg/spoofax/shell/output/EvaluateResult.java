@@ -14,11 +14,11 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
 /**
- * The result of the execution of an {@link EvaluateCommand}.
+ * Represents the result of the {@link EvaluateCommand}.
  */
 public abstract class EvaluateResult extends AbstractSpoofaxResult<IUnit> {
-    private AbstractSpoofaxResult<?> wrappedDelegate;
-    private IStrategoTerm result;
+    private final AbstractSpoofaxResult<?> wrappedDelegate;
+    private final IStrategoTerm result;
 
     /**
      * The result of the evaluation of an analyzed AST.
@@ -26,14 +26,15 @@ public abstract class EvaluateResult extends AbstractSpoofaxResult<IUnit> {
     public static class Analyzed extends EvaluateResult {
 
         /**
-         * Create a {@link EvaluateResult}.
+         * Instantiate a new EvaluateResult.
          *
          * @param common
-         *            the {@link IStrategoCommon} service
+         *            The {@link IStrategoCommon} service, used to pretty print
+         *            {@link IStrategoTerm}s.
          * @param analyzed
-         *            the wrapped {@link AnalyzeResult}.
+         *            The wrapped {@link AnalyzeResult}.
          * @param result
-         *            the result of the evaluation.
+         *            The result of the evaluation.
          */
         @Inject
         public Analyzed(IStrategoCommon common, @Assisted AnalyzeResult analyzed,
@@ -48,14 +49,15 @@ public abstract class EvaluateResult extends AbstractSpoofaxResult<IUnit> {
     public static class Parsed extends EvaluateResult {
 
         /**
-         * Create a {@link EvaluateResult}.
+         * Instantiate a new EvaluateResult.
          *
          * @param common
-         *            the {@link IStrategoCommon} service
+         *            The {@link IStrategoCommon} service, used to pretty print
+         *            {@link IStrategoTerm}s.
          * @param parsed
-         *            the wrapped {@link ParseResult}.
+         *            The wrapped {@link ParseResult}.
          * @param result
-         *            the result of the evaluation.
+         *            The result of the evaluation.
          */
         @Inject
         public Parsed(IStrategoCommon common, @Assisted ParseResult parsed,

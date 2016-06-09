@@ -7,54 +7,65 @@ import org.apache.commons.vfs2.FileObject;
 import org.metaborg.core.context.IContext;
 import org.metaborg.core.messages.IMessage;
 import org.metaborg.core.unit.IUnit;
-import org.metaborg.spoofax.shell.commands.SpoofaxCommand;
+import org.metaborg.spoofax.shell.client.IDisplay;
+import org.metaborg.spoofax.shell.commands.AbstractSpoofaxCommand;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 /**
- * Represents an {@link ISpoofaxResult} as returned by the {@link SpoofaxCommand} (TODO).
- * Wraps Spoofax {@link IUnit} of various types.
- * @param <T> the wrapped subtype of {@link IUnit}
+ * Results of {@link AbstractSpoofaxCommand#execute(String...)} are wrapped in an
+ * {@link ISpoofaxResult}. This is done so that each command has the same transparent return type
+ * for the client to process in {@link IDisplay#displayResult(ISpoofaxResult)}.
+ *
+ * @param <T>
+ *            The wrapped subclass of {@link IUnit}.
  */
 public interface ISpoofaxResult<T extends IUnit> {
     /**
-     * Returns the ast of this unit as a {@link IStrategoTerm} if present.
-     * @return a {@link IStrategoTerm} or null
+     * Return the AST of this unit as a {@link IStrategoTerm}, if present.
+     *
+     * @return An {@link Optional} of a {@link IStrategoTerm}.
      */
     Optional<IStrategoTerm> ast();
 
     /**
-     * Returns the context of this unit if present.
-     * @return a {@link IContext}
+     * Return the {@link IContext} in which the unit was generated, if present.
+     *
+     * @return An {@link Optional} of an {@link IContext}.
      */
     Optional<IContext> context();
 
     /**
-     * Returns a list of {@link IMessage} for all contained units.
-     * @return a list of {@link IMessage}
+     * Return a list of {@link IMessage} for all contained units.
+     *
+     * @return A list of {@link IMessage}.
      */
     List<IMessage> messages();
 
     /**
-     * Returns the source {@link FileObject} for this unit.
-     * @return the source {@link FileObject} for this unit
+     * Return the source {@link FileObject} for this unit.
+     *
+     * @return The source {@link FileObject} for this unit.
      */
     FileObject source();
 
     /**
-     * Returns the result of this unit.
-     * @return the result
+     * Return the result of this unit.
+     *
+     * @return The result.
      */
     StyledText styled();
 
     /**
-     * Returns the wrapped unit.
-     * @return the unit
+     * Return the wrapped {@link IUnit} subclass.
+     *
+     * @return The wrapped unit.
      */
     T unit();
 
     /**
-     * Returns a boolean indicating whether this unit is valid.
-     * @return a boolean
+     * Return a boolean indicating whether the result is valid.
+     *
+     * @return {@code true} iff this result is valid.
      */
     boolean valid();
 }

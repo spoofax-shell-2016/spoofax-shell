@@ -4,20 +4,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.metaborg.spoofax.shell.client.console.IDisplay;
-import org.metaborg.spoofax.shell.client.console.IEditor;
-import org.metaborg.spoofax.shell.client.console.IInputHistory;
+import org.metaborg.spoofax.shell.client.IDisplay;
+import org.metaborg.spoofax.shell.client.IEditor;
+import org.metaborg.spoofax.shell.client.IInputHistory;
+import org.metaborg.spoofax.shell.client.IRepl;
+import org.metaborg.spoofax.shell.client.ReplModule;
+import org.metaborg.spoofax.shell.client.console.commands.ExitCommand;
 import org.metaborg.spoofax.shell.client.console.impl.history.JLine2InputHistory;
 import org.metaborg.spoofax.shell.client.console.impl.history.JLine2PersistentInputHistory;
-import org.metaborg.spoofax.shell.client.console.impl.hooks.ConsoleMessageHook;
-import org.metaborg.spoofax.shell.client.console.impl.hooks.ConsoleResultHook;
-import org.metaborg.spoofax.shell.core.Repl;
-import org.metaborg.spoofax.shell.core.ReplModule;
-import org.metaborg.spoofax.shell.hooks.IMessageHook;
-import org.metaborg.spoofax.shell.hooks.IResultHook;
+import org.metaborg.spoofax.shell.commands.IReplCommand;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
@@ -26,11 +25,17 @@ import com.google.inject.name.Names;
  */
 public class ConsoleReplModule extends ReplModule {
 
+    @Override
+    protected void bindCommands(MapBinder<String, IReplCommand> commandBinder) {
+        super.bindCommands(commandBinder);
+        commandBinder.addBinding("exit").to(ExitCommand.class).in(Singleton.class);
+    }
+
     /**
      * Binds the user interface implementations.
      */
-    protected void configureUserInterface() {
-        bind(Repl.class).to(ConsoleRepl.class);
+    protected void bindUserInterface() {
+        bind(IRepl.class).to(ConsoleRepl.class);
         bind(ConsoleRepl.class).in(Singleton.class);
         bind(IInputHistory.class).to(JLine2InputHistory.class);
         bind(JLine2InputHistory.class).to(JLine2PersistentInputHistory.class);
@@ -38,8 +43,6 @@ public class ConsoleReplModule extends ReplModule {
         bind(TerminalUserInterface.class).in(Singleton.class);
         bind(IEditor.class).to(TerminalUserInterface.class);
         bind(IDisplay.class).to(TerminalUserInterface.class);
-        bind(IMessageHook.class).to(ConsoleMessageHook.class);
-        bind(IResultHook.class).to(ConsoleResultHook.class);
 
         bind(InputStream.class).annotatedWith(Names.named("in")).toInstance(System.in);
         bind(OutputStream.class).annotatedWith(Names.named("out")).toInstance(System.out);
@@ -52,7 +55,7 @@ public class ConsoleReplModule extends ReplModule {
     @Override
     protected void configure() {
         super.configure();
-        configureUserInterface();
+        bindUserInterface();
     }
 
     /**

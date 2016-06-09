@@ -12,10 +12,11 @@ import org.metaborg.core.messages.IMessage;
 import org.metaborg.core.project.IProject;
 import org.metaborg.spoofax.core.analysis.ISpoofaxAnalysisService;
 import org.metaborg.spoofax.core.unit.ISpoofaxAnalyzeUnit;
-import org.metaborg.spoofax.shell.hooks.IResultHook;
+import org.metaborg.spoofax.shell.client.IHook;
 import org.metaborg.spoofax.shell.invoker.ICommandFactory;
 import org.metaborg.spoofax.shell.output.AnalyzeResult;
 import org.metaborg.spoofax.shell.output.IResultFactory;
+import org.metaborg.spoofax.shell.output.ISpoofaxResult;
 import org.metaborg.spoofax.shell.output.InputResult;
 import org.metaborg.spoofax.shell.output.ParseResult;
 import org.metaborg.util.concurrent.IClosableLock;
@@ -24,28 +25,26 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
 /**
- * Represents an analyze command sent to Spoofax.
+ * Analyze an expression in some language.
  */
-public class AnalyzeCommand extends SpoofaxCommand {
+public class AnalyzeCommand extends AbstractSpoofaxCommand {
     private static final String DESCRIPTION = "Analyze an expression.";
-
-    private IContextService contextService;
-    private ISpoofaxAnalysisService analysisService;
-    private ParseCommand parseCommand;
+    private final IContextService contextService;
+    private final ISpoofaxAnalysisService analysisService;
+    private final ParseCommand parseCommand;
 
     /**
-     * Instantiate an {@link AnalyzeCommand}.
+     * Instantiate a new AnalyzeCommand.
      *
      * @param contextService
-     *            The {@link IContextService}.
+     *            The {@link IContextService} to retrieve the {@link IContext} in which this command
+     *            should operate.
      * @param analysisService
-     *            The {@link IAnalysisService}
+     *            The {@link IAnalysisService} used to perform the analysis.
      * @param commandFactory
      *            The {@link ICommandFactory} used to create a {@link ParseCommand}.
-     * @param resultHook
-     *            The {@link IResultHook} to send results of successful evaluations to.
      * @param resultFactory
-     *            The {@link ResultFactory}.
+     *            The {@link ResulFactory} to create {@link ISpoofaxResult results}.
      * @param project
      *            The project in which this command should operate.
      * @param lang
@@ -53,10 +52,9 @@ public class AnalyzeCommand extends SpoofaxCommand {
      */
     @Inject
     public AnalyzeCommand(IContextService contextService, ISpoofaxAnalysisService analysisService,
-                          ICommandFactory commandFactory, IResultHook resultHook,
-                          IResultFactory resultFactory, @Assisted IProject project,
-                          @Assisted ILanguageImpl lang) {
-        super(resultHook, resultFactory, project, lang);
+                          ICommandFactory commandFactory, IResultFactory resultFactory,
+                          @Assisted IProject project, @Assisted ILanguageImpl lang) {
+        super(resultFactory, project, lang);
         this.contextService = contextService;
         this.analysisService = analysisService;
         this.parseCommand = commandFactory.createParse(project, lang);
@@ -68,13 +66,13 @@ public class AnalyzeCommand extends SpoofaxCommand {
     }
 
     /**
-     * Analyzes a {@link ProcessingUnit} using the {@link ISpoofaxAnalysisService}.
+     * Analyze an expression using the {@link ISpoofaxAnalysisService}.
      *
      * @param unit
-     *            The {@link ProcessingUnit} that is used as input.
+     *            The {@link ParseResult} containing the parsed expression to analyze.
+     * @return An {@link AnalyzeResult}.
      * @throws MetaborgException
      *             When analyzing fails.
-     * @return An analyzed {@link ProcessingUnit}.
      */
     public AnalyzeResult analyze(ParseResult unit) throws MetaborgException {
         IContext context = unit.context().orElse(contextService.get(unit.source(), project, lang));
@@ -85,6 +83,8 @@ public class AnalyzeCommand extends SpoofaxCommand {
         }
         AnalyzeResult result = resultFactory.createAnalyzeResult(analyze);
 
+        // TODO: pass the result to the client instead of throwing an exception -- The client needs
+        // the result in order to do fancy stuff.
         if (!result.valid()) {
             throw new MetaborgException(result.messages().stream().map(IMessage::message)
                 .collect(Collectors.joining("\n")));
@@ -93,11 +93,12 @@ public class AnalyzeCommand extends SpoofaxCommand {
     }
 
     @Override
-    public void execute(String... args) throws MetaborgException {
+    public IHook execute(String... args) throws MetaborgException {
         try {
             InputResult input = resultFactory.createInputResult(lang, write(args[0]), args[0]);
             ParseResult parse = parseCommand.parse(input);
-            resultHook.accept(analyze(parse));
+            AnalyzeResult result = analyze(parse);
+            return (display) -> display.displayResult(result);
         } catch (IOException e) {
             throw new MetaborgException("Cannot write to temporary source file.");
         }

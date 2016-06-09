@@ -16,11 +16,14 @@ public class SpoofaxCommandInvoker implements ICommandInvoker {
     private final Map<String, IReplCommand> commands;
 
     /**
-     * Instantiates a new SpoofaxCommandInvoker.
+     * Instantiate a new SpoofaxCommandInvoker.
      *
-     * @param factory an {@link ICommandFactory}
+     * @param factory
+     *            An {@link ICommandFactory} to create
+     *            {@link org.metaborg.spoofax.shell.commands.AbstractSpoofaxCommand Spoofax
+     *            commands}.
      * @param defaults
-     *            The commands, with their command names as key (without prefix).
+     *            The default commands, with the names they are bound to as key (without prefix).
      */
     @Inject
     public SpoofaxCommandInvoker(ICommandFactory factory, Map<String, IReplCommand> defaults) {
