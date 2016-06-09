@@ -11,7 +11,6 @@ import org.metaborg.spoofax.core.stratego.IStrategoCommon;
 import org.metaborg.spoofax.core.syntax.JSGLRParserConfiguration;
 import org.metaborg.spoofax.core.unit.ISpoofaxInputUnit;
 import org.metaborg.spoofax.core.unit.ISpoofaxUnitService;
-import org.metaborg.spoofax.shell.commands.SpoofaxCommand;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.common.collect.Lists;
@@ -19,18 +18,17 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 /**
- * Represents a {@link InputResult} as returned by the {@link SpoofaxCommand}. Wraps a
- * {@link ISpoofaxInputUnit}.
+ * The InputResult wraps the {@link ISpoofaxInputUnit} to provide a base result.
  */
 public class InputResult extends AbstractSpoofaxResult<ISpoofaxInputUnit> {
 
     /**
-     * Create a {@link InputResult}.
+     * Instantiate a new InputResult.
      *
      * @param common
-     *            the {@link IStrategoCommon} service
+     *            The {@link IStrategoCommon} service, used to pretty print {@link IStrategoTerm}s.
      * @param unit
-     *            the wrapped {@link ISpoofaxInputUnit}
+     *            The wrapped {@link ISpoofaxInputUnit}.
      */
     @AssistedInject
     public InputResult(IStrategoCommon common, @Assisted ISpoofaxInputUnit unit) {
@@ -38,20 +36,20 @@ public class InputResult extends AbstractSpoofaxResult<ISpoofaxInputUnit> {
     }
 
     /**
-     * Create a {@link InputResult} from source.
+     * Instantiate a new InputResult from source.
      *
      * @param common
-     *            the {@link IStrategoCommon} service
+     *            The {@link IStrategoCommon} service, used to pretty print {@link IStrategoTerm}s.
      * @param unitService
-     *            the {@link ISpoofaxUnitService}
+     *            The {@link ISpoofaxUnitService} to create {@link ISpoofaxInputUnit}s.
      * @param lang
-     *            the {@link ILanguageImpl} of the unit
+     *            The language of this {@link InputResult}.
      * @param file
-     *            the source {@link FileObject}
+     *            The {@link FileObject} containing the source expression.
      * @param source
-     *            the source string
+     *            The source expression.
      * @param parserConfig
-     *            the parser configuration
+     *            The {@link JSGLRParserConfiguration parser configuration}.
      */
     @AssistedInject
     public InputResult(IStrategoCommon common, ISpoofaxUnitService unitService,
@@ -64,15 +62,15 @@ public class InputResult extends AbstractSpoofaxResult<ISpoofaxInputUnit> {
      * Create a {@link InputResult} from source.
      *
      * @param common
-     *            the {@link IStrategoCommon} service
+     *            The {@link IStrategoCommon} service, used to pretty print {@link IStrategoTerm}s.
      * @param unitService
-     *            the {@link ISpoofaxUnitService}
+     *            The {@link ISpoofaxUnitService} to create {@link ISpoofaxInputUnit}s.
      * @param lang
-     *            the {@link ILanguageImpl} of the unit
+     *            The language of this {@link InputResult}.
      * @param file
-     *            the source {@link FileObject}
+     *            The {@link FileObject} containing the source expression.
      * @param source
-     *            the source string
+     *            The source expression.
      */
     @AssistedInject
     public InputResult(IStrategoCommon common, ISpoofaxUnitService unitService,

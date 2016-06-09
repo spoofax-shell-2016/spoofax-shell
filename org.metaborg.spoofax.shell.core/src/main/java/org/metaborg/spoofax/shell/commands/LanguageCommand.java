@@ -20,9 +20,16 @@ import org.metaborg.spoofax.shell.output.StyledText;
 import com.google.inject.Inject;
 
 /**
- * Represents a command that loads a Spoofax language.
+ * This command loads a Spoofax language.
+ * <p>
+ * It detects the relevant steps for the found language and binds the appropriate commands for these
+ * steps in the {@link ICommandInvoker}.
  */
 public class LanguageCommand implements IReplCommand {
+    private static final String DESCRIPTION = "Load a language from a path.";
+    private static final String SYNTAX = "Syntax: :lang <path>\nThe path can either be a zip file "
+                                         + "(with extensions .zip or .full), or a top-level "
+                                         + "language project directory";
     private final ILanguageDiscoveryService langDiscoveryService;
     private final IResourceService resourceService;
     private final ICommandInvoker invoker;
@@ -30,16 +37,17 @@ public class LanguageCommand implements IReplCommand {
     private ILanguageImpl lang;
 
     /**
-     * Instantiate a {@link LanguageCommand}. Loads all commands applicable to a lanugage.
+     * Instantiate a new LanguageCommand. This also instantiates all commands applicable to the
+     * found language.
      *
      * @param langDiscoveryService
-     *            the {@link ILanguageDiscoveryService}
+     *            The {@link ILanguageDiscoveryService} to find language implementations.
      * @param resourceService
-     *            the {@link IResourceService}
+     *            The {@link IResourceService} to resolve language files on disk.
      * @param invoker
-     *            the {@link ICommandInvoker}
+     *            The {@link ICommandInvoker} to bind the commands appropriate for this language.
      * @param project
-     *            the associated {@link IProject}
+     *            The associated {@link IProject}.
      */
     @Inject
     public LanguageCommand(ILanguageDiscoveryService langDiscoveryService,
@@ -53,14 +61,17 @@ public class LanguageCommand implements IReplCommand {
 
     @Override
     public String description() {
-        return "Load a language from a path.";
+        return DESCRIPTION;
     }
 
     /**
      * Load a {@link ILanguageImpl} from a {@link FileObject}.
-     * @param langloc the {@link FileObject} containing the {@link ILanguageImpl}
-     * @return        the {@link ILanguageImpl}
-     * @throws MetaborgException when loading fails
+     *
+     * @param langloc
+     *            The {@link FileObject} containing the {@link ILanguageImpl}.
+     * @return The loaded {@link ILanguageImpl}.
+     * @throws MetaborgException
+     *             When loading fails.
      */
     public ILanguageImpl load(FileObject langloc) throws MetaborgException {
         Iterable<ILanguageDiscoveryRequest> requests = langDiscoveryService.request(langloc);
@@ -87,7 +98,7 @@ public class LanguageCommand implements IReplCommand {
     @Override
     public IHook execute(String... args) throws MetaborgException {
         if (args.length == 0 || args.length > 1) {
-            throw new MetaborgException("Syntax: :lang <path>");
+            throw new MetaborgException(SYNTAX);
         }
 
         ILanguageImpl lang = load(resolveLanguage(args[0]));

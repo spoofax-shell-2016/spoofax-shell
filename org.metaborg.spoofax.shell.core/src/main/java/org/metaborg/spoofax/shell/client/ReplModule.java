@@ -1,15 +1,9 @@
 package org.metaborg.spoofax.shell.client;
 
-import org.apache.commons.vfs2.FileObject;
-import org.metaborg.core.MetaborgException;
-import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.project.ISimpleProjectService;
 import org.metaborg.core.project.SimpleProjectService;
-import org.metaborg.core.resource.IResourceService;
-import org.metaborg.core.resource.ResourceService;
 import org.metaborg.spoofax.core.SpoofaxModule;
-import org.metaborg.spoofax.shell.client.IDisplay;
 import org.metaborg.spoofax.shell.commands.HelpCommand;
 import org.metaborg.spoofax.shell.commands.IReplCommand;
 import org.metaborg.spoofax.shell.commands.LanguageCommand;
@@ -23,21 +17,27 @@ import org.metaborg.spoofax.shell.invoker.SpoofaxCommandInvoker;
 import org.metaborg.spoofax.shell.output.EvaluateResult;
 import org.metaborg.spoofax.shell.output.IResultFactory;
 
-import com.google.common.io.Files;
-import com.google.inject.Provides;
+import com.google.inject.Guice;
+import com.google.inject.Module;
 import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Names;
 
 /**
- * This class binds the core classes. It is intended to be subclassed by client implementations.
- * These subclasses should bind their implementations of {@link IRepl} and {@link IDisplay}.
+ * This {@link Guice} {@link Module} binds the core REPL classes.
+ * <p>
+ * It is intended to be subclassed by client implementations, who should bind their implementations
+ * of {@link IRepl} and {@link IDisplay}. The {@link IReplCommand}s require an {@link IHook}
+ * implementation, but since it is a functional interface implementations can be created with
+ * lambdas at runtime. For this reason, an implementation does not need to be bound by the client.
+ * The other interfaces defined in this package ({@link IEditor} and {@link IInputHistory}) are not
+ * mandatory to implement.
  */
 public abstract class ReplModule extends SpoofaxModule {
 
     /**
-     * Binds the default commands.
+     * Binds the default {@link IReplCommand commands}.
      *
      * @param commandBinder
      *            The {@link MapBinder} for binding the commands to their names.
@@ -50,7 +50,7 @@ public abstract class ReplModule extends SpoofaxModule {
     }
 
     /**
-     * Binds the evaluation strategies.
+     * Binds the {@link IEvaluationStrategy evaluation strategies}.
      *
      * @param evalStrategyBinder
      *            The {@link MapBinder} for binding the strategies to their names.
@@ -85,22 +85,4 @@ public abstract class ReplModule extends SpoofaxModule {
             .build(IResultFactory.class));
     }
 
-    /**
-     * FIXME: hardcoded project returned here.
-     *
-     * @param resourceService
-     *            the Spoofax {@link ResourceService}
-     * @param projectService
-     *            the Spoofax {@link ISimpleProjectService}
-     * @return an {@link IProject}
-     * @throws MetaborgException
-     *             when creating a project failed
-     */
-    @Provides
-    protected IProject project(IResourceService resourceService,
-                               ISimpleProjectService projectService)
-        throws MetaborgException {
-        FileObject resolve = resourceService.resolve(Files.createTempDir());
-        return projectService.create(resolve);
-    }
 }

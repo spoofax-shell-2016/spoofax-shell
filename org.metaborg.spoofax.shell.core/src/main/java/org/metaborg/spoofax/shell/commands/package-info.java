@@ -1,5 +1,5 @@
 /**
- * Contains the logic for executing expressions using the core, or executing commands which are
- * common across clients.
+ * This package contains the logic for executing expressions or commands that are common across
+ * clients. See {@link IReplCommand} and {@link AbstractSpoofaxCommand} for more information.
  */
 package org.metaborg.spoofax.shell.commands;

@@ -9,22 +9,24 @@ import org.metaborg.core.context.IContext;
 import org.metaborg.core.messages.IMessage;
 import org.metaborg.spoofax.core.stratego.IStrategoCommon;
 import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
-import org.metaborg.spoofax.shell.commands.SpoofaxCommand;
+import org.metaborg.spoofax.shell.commands.ParseCommand;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 /**
- * Represents a {@link ParseResult} as returned by the {@link SpoofaxCommand}.
- * Wraps a {@link ISpoofaxParseUnit}.
+ * Represents the result of the {@link ParseCommand}.
  */
 public class ParseResult extends AbstractSpoofaxResult<ISpoofaxParseUnit> {
 
     /**
-     * Create a {@link ParseResult}.
-     * @param common  the {@link IStrategoCommon} service
-     * @param unit    the wrapped {@link ISpoofaxParseUnit}
+     * Instantiate a new ParseResult.
+     *
+     * @param common
+     *            The {@link IStrategoCommon} service, used to pretty print {@link IStrategoTerm}s.
+     * @param unit
+     *            The wrapped {@link ISpoofaxParseUnit}.
      */
     @AssistedInject
     public ParseResult(IStrategoCommon common,

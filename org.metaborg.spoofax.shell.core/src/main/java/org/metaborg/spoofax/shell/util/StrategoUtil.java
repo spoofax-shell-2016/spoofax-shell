@@ -11,10 +11,9 @@ import org.spoofax.jsglr.client.imploder.Token;
  * Contains utility functions for dealing with {@link IStrategoTerm}s.
  */
 public final class StrategoUtil {
-    private static final Token BOGUS_TOKEN = new Token(null, 0, 0, 0, 0, 0,
-                                                       IToken.TK_NO_TOKEN_KIND);
+    private static final Token BOGUS_TOKEN =
+        new Token(null, 0, 0, 0, 0, 0, IToken.TK_NO_TOKEN_KIND);
 
-    /* private due to checkstyle. */
     private StrategoUtil() {
     }
 

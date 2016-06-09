@@ -16,6 +16,7 @@ import org.metaborg.spoofax.shell.client.IHook;
 import org.metaborg.spoofax.shell.invoker.ICommandFactory;
 import org.metaborg.spoofax.shell.output.AnalyzeResult;
 import org.metaborg.spoofax.shell.output.IResultFactory;
+import org.metaborg.spoofax.shell.output.ISpoofaxResult;
 import org.metaborg.spoofax.shell.output.InputResult;
 import org.metaborg.spoofax.shell.output.ParseResult;
 import org.metaborg.util.concurrent.IClosableLock;
@@ -24,26 +25,26 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
 /**
- * Represents an analyze command sent to Spoofax.
+ * Analyze an expression in some language.
  */
-public class AnalyzeCommand extends SpoofaxCommand {
+public class AnalyzeCommand extends AbstractSpoofaxCommand {
     private static final String DESCRIPTION = "Analyze an expression.";
-
-    private IContextService contextService;
-    private ISpoofaxAnalysisService analysisService;
-    private ParseCommand parseCommand;
+    private final IContextService contextService;
+    private final ISpoofaxAnalysisService analysisService;
+    private final ParseCommand parseCommand;
 
     /**
-     * Instantiate an {@link AnalyzeCommand}.
+     * Instantiate a new AnalyzeCommand.
      *
      * @param contextService
-     *            The {@link IContextService}.
+     *            The {@link IContextService} to retrieve the {@link IContext} in which this command
+     *            should operate.
      * @param analysisService
-     *            The {@link IAnalysisService}
+     *            The {@link IAnalysisService} used to perform the analysis.
      * @param commandFactory
      *            The {@link ICommandFactory} used to create a {@link ParseCommand}.
      * @param resultFactory
-     *            The {@link ResultFactory}.
+     *            The {@link ResulFactory} to create {@link ISpoofaxResult results}.
      * @param project
      *            The project in which this command should operate.
      * @param lang
@@ -65,13 +66,13 @@ public class AnalyzeCommand extends SpoofaxCommand {
     }
 
     /**
-     * Analyzes a {@link ProcessingUnit} using the {@link ISpoofaxAnalysisService}.
+     * Analyze an expression using the {@link ISpoofaxAnalysisService}.
      *
      * @param unit
-     *            The {@link ProcessingUnit} that is used as input.
+     *            The {@link ParseResult} containing the parsed expression to analyze.
+     * @return An {@link AnalyzeResult}.
      * @throws MetaborgException
      *             When analyzing fails.
-     * @return An analyzed {@link ProcessingUnit}.
      */
     public AnalyzeResult analyze(ParseResult unit) throws MetaborgException {
         IContext context = unit.context().orElse(contextService.get(unit.source(), project, lang));

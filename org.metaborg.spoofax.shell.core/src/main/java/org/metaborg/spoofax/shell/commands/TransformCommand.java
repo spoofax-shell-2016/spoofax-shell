@@ -28,6 +28,7 @@ import org.metaborg.spoofax.shell.client.IHook;
 import org.metaborg.spoofax.shell.invoker.ICommandFactory;
 import org.metaborg.spoofax.shell.output.AnalyzeResult;
 import org.metaborg.spoofax.shell.output.IResultFactory;
+import org.metaborg.spoofax.shell.output.ISpoofaxResult;
 import org.metaborg.spoofax.shell.output.InputResult;
 import org.metaborg.spoofax.shell.output.ParseResult;
 import org.metaborg.spoofax.shell.output.TransformResult;
@@ -37,21 +38,20 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
 /**
- * Represents an evaluate command sent to Spoofax.
+ * Transform an expression in some language.
  */
-public class TransformCommand extends SpoofaxCommand implements IMenuItemVisitor {
+public class TransformCommand extends AbstractSpoofaxCommand implements IMenuItemVisitor {
     private static final String DESCRIPTION = "Transform an expression:";
-
-    private IContextService contextService;
-    private ISpoofaxTransformService transformService;
-
-    private AnalyzeCommand analyzeCommand;
-    private ParseCommand parseCommand;
-    private Strategy strategy;
-
-    private Map<String, ITransformAction> actions;
+    private final IContextService contextService;
+    private final ISpoofaxTransformService transformService;
+    private final AnalyzeCommand analyzeCommand;
+    private final ParseCommand parseCommand;
+    private final Strategy strategy;
+    private final Map<String, ITransformAction> actions;
 
     /**
+     * Interface for what happens before transformation of parsed input (i.e. either analyze or
+     * transform as-is).
      */
     private interface Strategy {
         TransformResult transform(IContext context, ParseResult unit, ITransformGoal goal)
@@ -59,6 +59,7 @@ public class TransformCommand extends SpoofaxCommand implements IMenuItemVisitor
     }
 
     /**
+     * Do not analyze before transforming.
      */
     private class Parsed implements Strategy {
         @Override
@@ -71,6 +72,7 @@ public class TransformCommand extends SpoofaxCommand implements IMenuItemVisitor
     }
 
     /**
+     * Analyze before transforming.
      */
     private class Analyzed implements Strategy {
         @Override
@@ -84,18 +86,20 @@ public class TransformCommand extends SpoofaxCommand implements IMenuItemVisitor
     }
 
     /**
-     * Instantiate an {@link EvaluateCommand}.
+     * Instantiate a new TransformCommand.
      *
      * @param contextService
-     *            The {@link IContextService}.
+     *            The {@link IContextService} to retrieve the {@link IContext} in which this command
+     *            should operate.
      * @param transformService
-     *            The {@link ISpoofaxTransformService}.
+     *            The {@link ISpoofaxTransformService} to perform the transformation.
      * @param menuService
-     *            The {@link MenuService} used to retrieve actions.
+     *            The {@link MenuService} used to retrieve the {@link ITransformAction}s.
      * @param commandFactory
-     *            The {@link CommandFactory} to create {@link SpoofaxCommand}s.
+     *            The {@link CommandFactory} to create the required {@link AbstractSpoofaxCommand
+     *            commands}.
      * @param resultFactory
-     *            The {@link ResultFactory}.
+     *            The {@link ResulFactory} to create {@link ISpoofaxResult results}.
      * @param project
      *            The project in which this command should operate.
      * @param lang

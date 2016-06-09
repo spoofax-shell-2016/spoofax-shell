@@ -14,16 +14,26 @@ import org.metaborg.spoofax.shell.output.StyledText;
 import com.google.inject.Inject;
 
 /**
- * Shows descriptions of all commands, or one command if given.
+ * This command prints help messages in two ways:
+ * <p>
+ * <ol>
+ * <li>It lists all the available commands with their description,</li>
+ * <li>It lists a single command with its description.</li>
+ * </ol>
+ * <p>
+ * For the first, use {@code :help}. For the second, use {@code :help <commandname>}.
  */
 public class HelpCommand implements IReplCommand {
+    private static final String DESCRIPTION = "Display help messages\nEither use `:help` to list "
+                                              + "all available commands, or `:help <command>` to "
+                                              + "list a single command";
     private final ICommandInvoker invoker;
 
     /**
-     * Instantiates a new HelpCommand.
+     * Instantiate a new HelpCommand.
      *
      * @param invoker
-     *            The {@link ICommandInvoker}.
+     *            The {@link ICommandInvoker} to retrieve the commands from.
      */
     @Inject
     public HelpCommand(ICommandInvoker invoker) {
@@ -32,15 +42,10 @@ public class HelpCommand implements IReplCommand {
 
     @Override
     public String description() {
-        return "You just used it.";
+        return DESCRIPTION;
     }
 
-    /**
-     * Formats the description of a {@link IReplCommand} map.
-     * @param commands  the {@link IReplCommand} map
-     * @return a formatted string
-     */
-    public String formathelp(Map<String, IReplCommand> commands) {
+    private String formathelp(Map<String, IReplCommand> commands) {
         int longestCommand = commands.keySet().stream().mapToInt(a -> a.length()).max().orElse(0);
         String format = "%-" + longestCommand + "s %s";
 

@@ -1,25 +1,27 @@
 package org.metaborg.spoofax.shell.client;
 
+import javax.annotation.Nullable;
+
 import org.metaborg.core.MetaborgException;
-import org.metaborg.spoofax.shell.client.IHook;
 import org.metaborg.spoofax.shell.commands.IReplCommand;
 import org.metaborg.spoofax.shell.invoker.CommandNotFoundException;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
 
 /**
- * This interface defines the evaluation part of a REPL (Read-Eval-Print-Loop). The reason for only
- * defining the evaluation phase is the fact that different clients have different needs and as
- * such, there is no way of defining {@code read} and {@code print} methods suitable for all
- * possible clients.
- *
+ * This interface defines the evaluation part of a REPL (Read-Eval-Print-Loop).
+ * <p>
+ * The reason for only defining the evaluation phase is the fact that different clients have
+ * different needs and as such, there is no way of defining {@code read}, {@code print} and
+ * {@code loop} methods suitable for all possible clients.
+ * <p>
  * The default {@link IRepl#eval(String)} implementation uses an {@link ICommandInvoker} to process
- * user input. This {@link ICommandInvoker} invokes {@link IReplCommand}s, which use
- * {@link org.metaborg.spoofax.shell.hooks} to display output.
+ * user input. This {@link ICommandInvoker} invokes {@link IReplCommand}s, which return an
+ * {@link IHook} to the client to their process result.
  */
 public interface IRepl {
     /**
      * Evaluate the input. This default implementation strips whitespace, skips over empty strings
-     * and uses an {@link ICommandInvoker}.
+     * and uses an {@link ICommandInvoker} to invoke {@link IReplCommand}s.
      *
      * @param input
      *            The input to send for evaluation.
@@ -31,7 +33,7 @@ public interface IRepl {
      *             When the command could not be found.
      */
     // TODO: return Optional?
-    default IHook eval(String input) throws MetaborgException, CommandNotFoundException {
+    default @Nullable IHook eval(String input) throws MetaborgException, CommandNotFoundException {
         input = input.trim();
         if (input.length() == 0) {
             return null;

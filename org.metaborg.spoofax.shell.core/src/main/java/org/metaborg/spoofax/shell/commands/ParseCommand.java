@@ -15,6 +15,7 @@ import org.metaborg.spoofax.core.syntax.SpoofaxSyntaxService;
 import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
 import org.metaborg.spoofax.shell.client.IHook;
 import org.metaborg.spoofax.shell.output.IResultFactory;
+import org.metaborg.spoofax.shell.output.ISpoofaxResult;
 import org.metaborg.spoofax.shell.output.InputResult;
 import org.metaborg.spoofax.shell.output.ParseResult;
 
@@ -22,19 +23,19 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
 /**
- * Represents a parse command sent to Spoofax.
+ * Parse an expression in some language.
  */
-public class ParseCommand extends SpoofaxCommand {
+public class ParseCommand extends AbstractSpoofaxCommand {
     private static final String DESCRIPTION = "Parse an expression.";
-    private ISpoofaxSyntaxService syntaxService;
+    private final ISpoofaxSyntaxService syntaxService;
 
     /**
-     * Instantiate a {@link ParseCommand}.
+     * Instantiate a new ParseCommand.
      *
      * @param syntaxService
-     *            The {@link SpoofaxSyntaxService}.
+     *            The {@link SpoofaxSyntaxService} to parse the input.
      * @param resultFactory
-     *            The {@link IResultFactory}.
+     *            The {@link ResulFactory} to create {@link ISpoofaxResult results}.
      * @param project
      *            The project in which this command should operate.
      * @param lang
@@ -53,11 +54,11 @@ public class ParseCommand extends SpoofaxCommand {
     }
 
     /**
-     * Parses a program using the {@link ISpoofaxSyntaxService}.
+     * Parse an expression using the {@link ISpoofaxSyntaxService}.
      *
      * @param unit
-     *            the input for the program
-     * @return An {@link ISpoofaxParseUnit}.
+     *            The {@link InputResult} containing the input to parse.
+     * @return A {@link ParseResult}.
      * @throws MetaborgException
      *             When parsing fails.
      */

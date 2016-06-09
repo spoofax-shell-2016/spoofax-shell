@@ -5,6 +5,10 @@ import java.util.List;
 
 /**
  * This interface represents the input history of a REPL session.
+ * <p>
+ * Its use is not mandatory (e.g. it is not implicitly required by anything bound in
+ * {@link ReplModule}), but considering a history is something many clients need an interface has
+ * been provided for convenience.
  */
 public interface IInputHistory {
 
@@ -44,7 +48,8 @@ public interface IInputHistory {
     int size();
 
     /**
-     * Same as {@link #entries(int) entries(0)}.
+     * Get all the history entries, oldest first. The default implementation is equal to
+     * {@link #entries(int) entries(0)}.
      *
      * @return All entries, oldest first.
      */
@@ -53,7 +58,8 @@ public interface IInputHistory {
     }
 
     /**
-     * Same as {@link #entries(int, int) entries(from, #size())}.
+     * Get all history entries from a certain index. The default implementation is equal to
+     * {@link #entries(int, int) entries(from, #size())}.
      *
      * @param from
      *            The index from which to return the history, inclusive.
@@ -89,7 +95,7 @@ public interface IInputHistory {
      * file.
      *
      * @throws IOException
-     *             When an IO error occurs while writing the input history to disk.
+     *             When an IO error occurs while writing the input history to the file system.
      */
     default void persistToDisk() throws IOException {
     }

@@ -10,39 +10,43 @@ import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.project.IProject;
 import org.metaborg.spoofax.shell.client.IHook;
 import org.metaborg.spoofax.shell.output.IResultFactory;
+import org.metaborg.spoofax.shell.output.ISpoofaxResult;
 
 import com.google.inject.Inject;
 
 /**
- * Command for processing a String as an expression in some language.
+ * An abstract base command for processing a string as an expression in some language, in some way.
  */
-public abstract class SpoofaxCommand implements IReplCommand {
-    protected IResultFactory resultFactory;
-    protected IProject project;
-    protected ILanguageImpl lang;
+public abstract class AbstractSpoofaxCommand implements IReplCommand {
+    protected final IResultFactory resultFactory;
+    protected final IProject project;
+    protected final ILanguageImpl lang;
 
     /**
-     * Instantiate a {@link SpoofaxCommand}.
+     * Instantiate a new AbstractSpoofaxCommand.
      *
      * @param resultFactory
-     *            The {@link ResulFactory}.
+     *            The {@link ResulFactory} to create {@link ISpoofaxResult results}.
      * @param project
      *            The project in which this command should operate.
      * @param lang
      *            The language to which this command applies.
      */
     @Inject
-    SpoofaxCommand(IResultFactory resultFactory, IProject project, ILanguageImpl lang) {
+    AbstractSpoofaxCommand(IResultFactory resultFactory, IProject project, ILanguageImpl lang) {
         this.resultFactory = resultFactory;
         this.project = project;
         this.lang = lang;
     }
 
     /**
-     * Write source to a temporary file.
-     * @param source the source code
-     * @return a {@link FileObject}
-     * @throws IOException when writing to the file fails
+     * Write {@code source} to a temporary file. This is required by Spoofax (for e.g. tracing).
+     *
+     * @param source
+     *            The source code to write to the temporary file.
+     * @return A {@link FileObject} representing the temporary file.
+     * @throws IOException
+     *             When writing to the file fails.
      */
     protected FileObject write(String source) throws IOException {
         // FIXME: hardcoded file path

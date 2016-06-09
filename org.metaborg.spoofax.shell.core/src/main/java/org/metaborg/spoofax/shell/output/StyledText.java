@@ -15,14 +15,18 @@ import org.metaborg.core.style.Style;
 import com.google.common.collect.Lists;
 
 /**
- * Represents a styled text containing several styled strings, each represented by an
- * {@link IRegionStyle}.
+ * Represents a collection of several styled strings, each represented by an {@link IRegionStyle}.
+ * <p>
+ * This class is used as a translation between Spoofax and clients, since Spoofax leaves the
+ * {@code fragment} argument in the {@link IRegionStyle} empty.
  */
+// TODO: somewhere in the command-result chain, the source text needs to be put in the IRegionStyle
+// so that the clients can highlight syntax.
 public class StyledText {
     private final List<IRegionStyle<String>> source;
 
     /**
-     * Create a styled text from a string with no style.
+     * Create a StyledText from a string with no style.
      *
      * @param text
      *            The unstyled text.
@@ -32,10 +36,10 @@ public class StyledText {
     }
 
     /**
-     * Create a styled text from a colored string.
+     * Create a StyledText from a colored string.
      *
      * @param color
-     *            The color to apply.
+     *            The {@link Color} to apply.
      * @param text
      *            The unstyled text.
      */
@@ -44,10 +48,10 @@ public class StyledText {
     }
 
     /**
-     * Create a styled text from a string with a style.
+     * Create a StyledText from a string with a {@link IStyle}.
      *
      * @param style
-     *            the style
+     *            The {@link IStyle} to apply.
      * @param text
      *            The unstyled text.
      */
@@ -58,7 +62,7 @@ public class StyledText {
     }
 
     /**
-     * Create a styled text from a list of styled strings.
+     * Create a StyledText from a list of {@link IRegionStyle}s.
      *
      * @param sourceRegions
      *            The list of styled strings.
@@ -68,16 +72,16 @@ public class StyledText {
     }
 
     /**
-     * Return all the styled strings in this text.
+     * Return all the {@link IRegionStyle}s in this StyledText.
      *
-     * @return All the styled strings in this text.
+     * @return All the {@link IRegionStyle}s in this StyledText.
      */
     public List<IRegionStyle<String>> getSource() {
         return source;
     }
 
     /**
-     * Append a string with no style to this styled text.
+     * Append a string with no style to this StyledText.
      *
      * @param text
      *            The unstyled text.
@@ -88,10 +92,10 @@ public class StyledText {
     }
 
     /**
-     * Append a colored string to this styled text.
+     * Append a colored string to this StyledText.
      *
      * @param color
-     *            The color to apply.
+     *            The {@link Color} to apply.
      * @param text
      *            The unstyled text.
      * @return The styled text.
@@ -101,10 +105,10 @@ public class StyledText {
     }
 
     /**
-     * Append a string with an arbitrary style to this styled text.
+     * Append a string with an arbitrary {@link IStyle} to this StyledText.
      *
      * @param style
-     *            The style to apply.
+     *            The {@link IStyle} to apply.
      * @param text
      *            The unstyled text.
      * @return The styled text.
@@ -115,12 +119,12 @@ public class StyledText {
     }
 
     /**
-     * Append a string with a region and a style to this styled text.
+     * Append a string with an {@link ISourceRegion} and an {@link IStyle} to this StyledText.
      *
      * @param region
-     *            The region to style.
+     *            The {@link ISourceRegion} to style.
      * @param style
-     *            The style to apply.
+     *            The {@link IStyle} to apply.
      * @param text
      *            The unstyled text.
      * @return The styled text.

@@ -3,22 +3,25 @@ package org.metaborg.spoofax.shell.output;
 import org.apache.commons.vfs2.FileObject;
 import org.metaborg.core.unit.IUnit;
 import org.metaborg.spoofax.core.stratego.IStrategoCommon;
-import org.metaborg.spoofax.shell.commands.SpoofaxCommand;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 /**
- * Represents an {@link AbstractResult} as returned by the {@link SpoofaxCommand}.
- * Wraps Spoofax {@link IUnit} of various types.
- * @param <T> the wrapped subtype of {@link IUnit}
+ * An abstract base class of {@link ISpoofaxResult}.
+ *
+ * @param <T>
+ *            The wrapped subclass of {@link IUnit}.
  */
 public abstract class AbstractSpoofaxResult<T extends IUnit> implements ISpoofaxResult<IUnit> {
-    private IStrategoCommon common;
-    private T unit;
+    private final IStrategoCommon common;
+    private final T unit;
 
     /**
-     * Constructor for an {@link AbstractResult}.
-     * @param common  the {@link IStrategoCommon} service
-     * @param unit    the wrapped {@link IUnit}
+     * Instantiate a new AbstractSpoofaxResult.
+     *
+     * @param common
+     *            The {@link IStrategoCommon} service, used to pretty print {@link IStrategoTerm}s.
+     * @param unit
+     *            The wrapped {@link IUnit}.
      */
     public AbstractSpoofaxResult(IStrategoCommon common, T unit) {
         this.common = common;
@@ -36,9 +39,11 @@ public abstract class AbstractSpoofaxResult<T extends IUnit> implements ISpoofax
     }
 
     /**
-     * Returns a textual representation of a term.
-     * @param term  the term
-     * @return a string
+     * Return a textual, pretty printed representation of an {@link IStrategoTerm}.
+     *
+     * @param term
+     *            The term to pretty print.
+     * @return The pretty printed textual representation.
      */
     public StyledText toString(IStrategoTerm term) {
         return new StyledText(common.toString(term));

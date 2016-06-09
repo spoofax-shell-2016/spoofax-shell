@@ -8,15 +8,15 @@ import org.metaborg.spoofax.shell.client.IHook;
 import org.metaborg.spoofax.shell.commands.IReplCommand;
 
 /**
- * An interface for binding and executing {@link IReplCommand}s.
+ * An interface for binding (to user-facing names) and executing {@link IReplCommand}s.
  */
 public interface ICommandInvoker {
 
     /**
-     * Returns the command with name {@code commandName}.
+     * Return the {@link IReplCommand} bound to {@code commandName}.
      *
      * @param commandName
-     *            The name of an {@link IReplCommand}.
+     *            The name of the {@link IReplCommand} to find.
      * @return The {@link IReplCommand} bound to {@code commandName}.
      * @throws CommandNotFoundException
      *             When the command could not be found.
@@ -24,8 +24,10 @@ public interface ICommandInvoker {
     IReplCommand commandFromName(String commandName) throws CommandNotFoundException;
 
     /**
-     * @return The prefix of the {@link IReplCommand}s. The {@link IReplCommand}s are stored without
-     *         this prefix.
+     * The prefix required for the user to "invoke" commands, e.g. {@code :}.
+     *
+     * @return The prefix of the {@link IReplCommand commands}. The {@link IReplCommand commands}
+     *         are stored without this prefix.
      */
     String commandPrefix();
 
@@ -38,7 +40,8 @@ public interface ICommandInvoker {
      * @throws CommandNotFoundException
      *             When the command could not be found.
      * @throws MetaborgException
-     *             When something goes wrong during execution
+     *             When something goes wrong during execution.
+     * @see IReplCommand#execute(String...)
      */
     default IHook execute(String optionallyPrefixedCommandName)
         throws CommandNotFoundException, MetaborgException {
@@ -56,25 +59,30 @@ public interface ICommandInvoker {
 
     /**
      * Add a command to the list of available commands.
-     * @param name    The name of the {@link IReplCommand}
-     * @param command The {@link IReplCommand}
+     *
+     * @param name
+     *            The name to bind the {@link IReplCommand} to.
+     * @param command
+     *            The {@link IReplCommand} to add to the list.
      */
     void addCommand(String name, IReplCommand command);
 
     /**
-     * Get the command factory.
-     * @return an {@link ICommandFactory}
+     * Get the command factory used to create {@link IReplCommand commands}.
+     *
+     * @return An {@link ICommandFactory}.
      */
     ICommandFactory getCommandFactory();
 
     /**
-     * Get a list of all available commands.
-     * @return a {@link Map} from command name to {@link IReplCommand}
+     * Get a list of all available {@link IReplCommand commands}.
+     *
+     * @return A {@link Map} from command name to {@link IReplCommand}.
      */
     Map<String, IReplCommand> getCommands();
 
     /**
-     * Reset the list of available commands to its initial default list.
+     * Reset the list of available commands to its initial value.
      */
     void resetCommands();
 }
