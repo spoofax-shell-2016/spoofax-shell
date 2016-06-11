@@ -22,15 +22,23 @@ public class Activator extends AbstractUIPlugin {
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
-        Activator.plugin = this;
-        Activator.injector = Guice.createInjector(new EclipseReplModule());
+        setActivator(this);
+        setInjector(Guice.createInjector(new EclipseReplModule()));
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
-        Activator.injector = null;
-        Activator.plugin = null;
+        setInjector(null);
+        setActivator(null);
         super.stop(context);
+    }
+
+    private static void setActivator(Activator activator) {
+        Activator.plugin = activator;
+    }
+
+    private static void setInjector(Injector injector) {
+        Activator.injector = injector;
     }
 
     /**
