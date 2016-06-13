@@ -16,13 +16,14 @@ import org.junit.runner.RunWith;
 import org.metaborg.core.context.IContext;
 import org.metaborg.core.messages.IMessage;
 import org.metaborg.spoofax.core.stratego.IStrategoCommon;
+import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
 import org.metaborg.spoofax.core.unit.ISpoofaxTransformUnit;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 /**
- * Test the {@link TransformResult} class that wraps an {@link ISpoofaxTransformUnit}.
+ * Test the {@link AbstractTransformResult} class that wraps an {@link ISpoofaxTransformUnit}.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class TransformResultTest {
@@ -30,13 +31,13 @@ public class TransformResultTest {
 
     // Constructor mocks
     @Mock private IStrategoCommon common;
-    @Mock private ISpoofaxTransformUnit<?> unit;
+    @Mock private ISpoofaxTransformUnit<ISpoofaxParseUnit> unit;
     @Mock private IStrategoTerm ast;
     @Mock private IContext context;
     @Mock private IMessage message1, message2;
 
     private List<IMessage> messages;
-    private TransformResult transformResult;
+    private AbstractTransformResult<?> transformResult;
 
     /**
      * Set up mocks used in the test case.
@@ -49,11 +50,11 @@ public class TransformResultTest {
         when(unit.context()).thenReturn(context);
         when(unit.messages()).thenReturn(messages);
 
-        transformResult = new TransformResult(common, unit);
+        transformResult = new ParseTransformResult(common, unit);
     }
 
     /**
-     * Test returning the ast of a {@link TransformResult}.
+     * Test returning the ast of a {@link AbstractTransformResult}.
      */
     @Test
     public void testAst() {
@@ -61,7 +62,7 @@ public class TransformResultTest {
     }
 
     /**
-     * Test returning the {@link IContext} of a {@link TransformResult}.
+     * Test returning the {@link IContext} of a {@link AbstractTransformResult}.
      */
     @Test
     public void testContext() {
@@ -69,7 +70,7 @@ public class TransformResultTest {
     }
 
     /**
-     * Test returning the list of {@link IMessage} of a {@link TransformResult}.
+     * Test returning the list of {@link IMessage} of a {@link AbstractTransformResult}.
      */
     @Test
     public void testMessages() {
@@ -77,7 +78,7 @@ public class TransformResultTest {
     }
 
     /**
-     * Test returning the {@link StyledText} of a valid {@link TransformResult}.
+     * Test returning the {@link StyledText} of a valid {@link AbstractTransformResult}.
      */
     @Test
     public void testValidStyled() {
@@ -87,7 +88,7 @@ public class TransformResultTest {
     }
 
     /**
-     * Test returning the {@link StyledText} of an invalid {@link TransformResult}.
+     * Test returning the {@link StyledText} of an invalid {@link AbstractTransformResult}.
      */
     @Test
     public void testInvalidStyled() {
@@ -97,7 +98,8 @@ public class TransformResultTest {
     }
 
     /**
-     * Test validity of a {@link TransformResult} wrapping a valid {@link ISpoofaxTransformUnit}.
+     * Test validity of a {@link ParseTransformResult} wrapping a valid
+     * {@link ISpoofaxTransformUnit}.
      */
     @Test
     public void testValid() {
@@ -107,7 +109,8 @@ public class TransformResultTest {
     }
 
     /**
-     * Test validity of a {@link TransformResult} wrapping an invalid {@link ISpoofaxTransformUnit}.
+     * Test validity of a {@link ParseTransformResult} wrapping an invalid
+     * {@link ISpoofaxTransformUnit}.
      */
     @Test
     public void testInvalid() {
