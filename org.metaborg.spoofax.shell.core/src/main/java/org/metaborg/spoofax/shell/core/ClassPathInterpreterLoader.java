@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Properties;
 
 import org.apache.commons.lang3.ClassUtils;
@@ -11,6 +12,9 @@ import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemManager;
+import org.apache.commons.vfs2.VFS;
+import org.apache.commons.vfs2.impl.VFSClassLoader;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.meta.lang.dynsem.interpreter.DynSemEntryPoint;
 import org.metaborg.meta.lang.dynsem.interpreter.DynSemLanguage;
@@ -24,6 +28,7 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.vm.PolyglotEngine;
+import com.oracle.truffle.api.vm.PolyglotEngine.Builder;
 
 /**
  * Loads an interpreter that is present in the class path. This {@link IInterpreterLoader} uses
@@ -35,10 +40,21 @@ public class ClassPathInterpreterLoader implements IInterpreterLoader {
     private String langName;
     private String targetPackage;
     private ITermTransformer transformer;
+    private VFSClassLoader loader;
 
     @Override
     public PolyglotEngine loadInterpreterForLanguage(ILanguageImpl langImpl)
         throws InterpreterLoadException {
+        String path = "file:///opt/spoofax-workspace/metaborg-sl/org.metaborg.lang.sl.interp/target/sl.interpreter-0.1.jar";
+
+        try {
+            FileSystemManager manager = VFS.getManager();
+            loader = new LangClassLoader(manager.resolveFile(path), manager,
+                                         this.getClass().getClassLoader());
+        } catch (FileSystemException e1) {
+            e1.printStackTrace();
+        }
+
         loadDynSemProperties(langImpl);
 
         DynSemEntryPoint entryPoint = getEntryPoint();
@@ -49,16 +65,28 @@ public class ClassPathInterpreterLoader implements IInterpreterLoader {
         ITermRegistry termRegistry = entryPoint.getTermRegistry();
 
         String mimeType = entryPoint.getMimeType();
-        PolyglotEngine builtEngine =
-            PolyglotEngine.newBuilder().config(mimeType, DynSemLanguage.PARSER, parser)
-                .config(mimeType, DynSemLanguage.RULE_REGISTRY, ruleRegistry)
-                .config(mimeType, DynSemLanguage.TERM_REGISTRY, termRegistry).build();
+        Thread.currentThread().setContextClassLoader(loader);
+        PolyglotEngine builtEngine = null;
         try {
+            Class<PolyglotEngine.Builder> polyBuilderType = (Class<PolyglotEngine.Builder>)
+                    ClassUtils.getClass(loader, PolyglotEngine.Builder.class.getCanonicalName());
+            Class<PolyglotEngine> polyEngineType = (Class<PolyglotEngine>)
+                    ClassUtils.getClass(loader, PolyglotEngine.class.getCanonicalName());
+
+            Method method = ClassUtils.getPublicMethod(polyEngineType, "newBuilder", new Class<?>[] { });
+            PolyglotEngine.Builder builder = (Builder) method.invoke(null, null);
+            builtEngine = builder.config(mimeType, DynSemLanguage.PARSER, parser)
+                    .config(mimeType, DynSemLanguage.RULE_REGISTRY, ruleRegistry)
+                    .config(mimeType, DynSemLanguage.TERM_REGISTRY, termRegistry).build();
+            System.out.println();
+            System.out.println(builder.getClass().getClassLoader());
+            System.out.println(polyEngineType.getClassLoader());
+
             InputStreamReader specTermReader =
                 new InputStreamReader(entryPoint.getSpecificationTerm(), "UTF-8");
             builtEngine.eval(Source.fromReader(specTermReader, "Evaluate to interpreter.")
                 .withMimeType(mimeType));
-        } catch (IOException e) {
+        } catch (IOException | ReflectiveOperationException e) {
             throw new InterpreterLoadException(e);
         }
         return builtEngine;
@@ -99,8 +127,9 @@ public class ClassPathInterpreterLoader implements IInterpreterLoader {
     @SuppressWarnings("unchecked")
     private <T> Class<T> getGeneratedClass(String className) throws InterpreterLoadException {
         try {
-            return (Class<T>) ClassUtils.getClass(targetPackage + "." + langName + className);
+            return (Class<T>) ClassUtils.getClass(loader, targetPackage + "." + langName + className);
         } catch (ClassNotFoundException e) {
+            System.out.println("Is this where loading fails?");
             throw new InterpreterLoadException(e);
         }
     }
