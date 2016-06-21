@@ -15,6 +15,7 @@ import org.metaborg.spoofax.shell.output.FailOrSuccessResult;
 import org.metaborg.spoofax.shell.output.IResult;
 import org.metaborg.spoofax.shell.output.InputResult;
 import org.metaborg.spoofax.shell.output.ParseResult;
+import org.metaborg.spoofax.shell.output.StyleResult;
 import org.metaborg.spoofax.shell.output.TransformResult;
 
 import com.google.inject.assistedinject.Assisted;
@@ -127,6 +128,10 @@ public class CommandBuilder<R extends IResult> {
             .kleisliCompose(functionFactory.createEvaluateFunction(project, lang));
     }
 
+    private FailableFunction<String, StyleResult, IResult> styleFunction() {
+        return parseFunction().kleisliCompose(functionFactory.createStyleFunction(project, lang));
+    }
+
     /**
      * Returns a function that creates an {@link InputResult} from a String.
      *
@@ -192,6 +197,10 @@ public class CommandBuilder<R extends IResult> {
      */
     public CommandBuilder<EvaluateResult> evalAnalyzed() {
         return function(aEvaluateFunction());
+    }
+
+    public CommandBuilder<StyleResult> styleParsed() {
+        return function(styleFunction());
     }
 
     /**

@@ -2,6 +2,7 @@ package org.metaborg.spoofax.shell.output;
 
 import org.apache.commons.vfs2.FileObject;
 import org.metaborg.core.language.ILanguageImpl;
+import org.metaborg.core.style.IRegionStyle;
 import org.metaborg.core.syntax.IInputUnit;
 import org.metaborg.spoofax.core.syntax.JSGLRParserConfiguration;
 import org.metaborg.spoofax.core.unit.ISpoofaxAnalyzeUnit;
@@ -83,5 +84,8 @@ public interface IResultFactory {
      */
     EvaluateResult createEvaluateResult(ISpoofaxTermResult<?> inputTermResult,
                                         IStrategoTerm result);
+
+    StyleResult createStyleResult(ISpoofaxParseUnit unit,
+                                     Iterable<IRegionStyle<IStrategoTerm>> styled);
 
 }
