@@ -140,7 +140,10 @@ public class EclipseEditor extends KeyAdapter implements ModifyListener {
 
     @Override
     public void modifyText(ModifyEvent event) {
-        // TODO: text has been modified, send it to get syntax highlighting.
+        String doc = document.get();
+        observers.forEach(e -> {
+            e.onNext(String.format(":style %s", doc));
+        });
     }
 
 }
