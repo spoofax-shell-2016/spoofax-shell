@@ -17,9 +17,11 @@ import com.google.inject.Injector;
  * Eclipse as a singleton, at most one ReplView will be active at any given time.
  */
 public class ReplView extends ViewPart {
+    public static final String ID = Activator.getPluginID() + ".view";
     private static final int DISPLAYWEIGHT = 5;
     private static final int EDITORWEIGHT = 1;
     private EclipseEditor editor;
+    private EclipseRepl repl;
     private ColorManager colorManager;
 
     @Override
@@ -36,11 +38,20 @@ public class ReplView extends ViewPart {
         page.setWeights(new int[] { DISPLAYWEIGHT, EDITORWEIGHT });
 
         // Instantiate the REPL and add it as observer of the editor.
-        EclipseRepl repl = factory.createRepl(display);
+        this.repl = factory.createRepl(display);
         this.editor.asObservable().subscribe(repl);
 
         // Retrieve the color manager so that it can be disposed of when the view is closed.
         this.colorManager = injector.getInstance(ColorManager.class);
+    }
+
+    /**
+     * Return the currently active {@link EclipseRepl}.
+     *
+     * @return The currently active {@link EclipseRepl.
+     */
+    public EclipseRepl getRepl() {
+        return this.repl;
     }
 
     @Override
