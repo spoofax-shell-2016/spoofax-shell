@@ -2,15 +2,57 @@
 <?eclipse version="3.4"?>
 <plugin>
 
-    <!-- The main REPL UI contribution. -->
     <extension point="org.eclipse.ui.views">
         <category id="org.metaborg.spoofax.shell.eclipse"
                 name="Spoofax"/>
+        <!-- The main REPL UI contribution. -->
         <view id="org.metaborg.spoofax.shell.eclipse.view"
             name="REPL"
             icon="icons/icon.gif"
         category="org.metaborg.spoofax.shell.eclipse"
            class="org.metaborg.spoofax.shell.client.eclipse.ReplView"/>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <!-- "isReplOpen" property tester. -->
+        <propertyTester class="org.metaborg.spoofax.shell.client.eclipse.properties.ReplPropertyTester"
+                           id="org.metaborg.spoofax.shell.eclipse.propertyTester.isReplOpen"
+                    namespace="org.metaborg.spoofax.shell.eclipse"
+                   properties="isReplOpen"
+                         type="java.lang.Object"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <!-- "Open in Spoofax REPL" command. -->
+        <command id="org.metaborg.spoofax.shell.client.eclipse.handlers.open" name="Open in Spoofax REPL"/>
+    </extension>
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.metaborg.spoofax.shell.client.eclipse.handlers.open"
+                     class="org.metaborg.spoofax.shell.client.eclipse.handlers.OpenHandler">
+            <enabledWhen>
+                <iterate ifEmpty="false">
+                    <instanceof value="org.eclipse.core.resources.IFile"/>
+                    <test property="org.metaborg.spoofax.shell.eclipse.isReplOpen" forcePluginActivation="true"/>
+                </iterate>
+            </enabledWhen>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <!-- Menu item in the context menu of the project explorer. -->
+        <menuContribution locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=group.openWith">
+            <command commandId="org.metaborg.spoofax.shell.client.eclipse.handlers.open"
+                         label="Open in Spoofax REPL"
+                       tooltip="Open this file in the Spoofax REPL">
+            </command>
+        </menuContribution>
+        <!-- Menu item in the context menu of the package explorer. -->
+        <menuContribution locationURI="popup:org.eclipse.jdt.ui.PackageExplorer?after=group.show">
+            <command commandId="org.metaborg.spoofax.shell.client.eclipse.handlers.open"
+                         label="Open in Spoofax REPL"
+                       tooltip="Open this file in the Spoofax REPL">
+            </command>
+        </menuContribution>
     </extension>
 
 </plugin>
