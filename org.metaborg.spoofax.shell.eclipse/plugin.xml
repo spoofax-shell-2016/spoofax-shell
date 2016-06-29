@@ -14,12 +14,6 @@
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
-        <!-- "isFile" property tester. -->
-        <propertyTester class="org.metaborg.spoofax.shell.client.eclipse.properties.ReplPropertyTester"
-                           id="org.metaborg.spoofax.shell.eclipse.propertyTester.isFile"
-                    namespace="org.metaborg.spoofax.shell.eclipse"
-                   properties="isFile"
-                         type="java.lang.Object"/>
         <!-- "isReplOpen" property tester. -->
         <propertyTester class="org.metaborg.spoofax.shell.client.eclipse.properties.ReplPropertyTester"
                            id="org.metaborg.spoofax.shell.eclipse.propertyTester.isReplOpen"
@@ -37,7 +31,7 @@
                      class="org.metaborg.spoofax.shell.client.eclipse.handlers.OpenHandler">
             <enabledWhen>
                 <iterate ifEmpty="false">
-                    <test property="org.metaborg.spoofax.shell.eclipse.isFile" forcePluginActivation="true"/>
+                    <instanceof value="org.eclipse.core.resources.IFile"/>
                     <test property="org.metaborg.spoofax.shell.eclipse.isReplOpen" forcePluginActivation="true"/>
                 </iterate>
             </enabledWhen>
