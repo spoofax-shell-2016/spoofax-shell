@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.metaborg.spoofax.shell.client.IDisplay;
 import org.metaborg.spoofax.shell.client.IRepl;
 import org.metaborg.spoofax.shell.invoker.ICommandInvoker;
+import org.metaborg.spoofax.shell.output.StyledText;
 
 import com.google.inject.Inject;
 
@@ -58,6 +59,7 @@ public class ConsoleRepl implements IRepl {
      */
     public void runOnce(String input) {
         eval(input).accept(display);
+        display.displayStyledText(new StyledText());
     }
 
     /**
