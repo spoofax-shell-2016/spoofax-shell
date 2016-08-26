@@ -1,8 +1,11 @@
 package org.metaborg.spoofax.shell.client.eclipse.impl;
 
+import java.awt.Color;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -24,12 +27,16 @@ import rx.Observer;
 /**
  * An Eclipse-based implementation of {@link IRepl}.
  *
- * It uses a multiline input editor with keyboard shortcuts, including persistent history, syntax
- * highlighting and error marking.
+ * It uses a multiline input editor with keyboard shortcuts, including volatile history and error
+ * marking.
  *
  * Note that this class evaluates input in a separate thread.
  */
 public class EclipseRepl implements IRepl, Observer<String> {
+    private static final long TIMEOUT = 10;
+    private static final TimeUnit TIMEUNIT = TimeUnit.SECONDS;
+    private static final String TIMEOUTMESSAGE = String
+        .format("Evaluation time exceeded %d %s." + " It has been killed.", TIMEOUT, TIMEUNIT);
     private final IDisplay display;
     private final ICommandInvoker invoker;
     private final ExecutorService pool;
@@ -88,10 +95,17 @@ public class EclipseRepl implements IRepl, Observer<String> {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    IResult result = pool.submit(() -> eval(input)).get();
+                    IResult result =
+                        pool.submit(() -> eval(input)).get(TIMEOUT, TIMEUNIT);
                     runAsUIJob(result);
                     return Status.OK_STATUS;
+                } catch (TimeoutException t) {
+                    runAsUIJob((visitor) -> visitor
+                        .visitMessage(new StyledText(Color.RED, TIMEOUTMESSAGE)));
+                    return Status.CANCEL_STATUS;
                 } catch (InterruptedException | ExecutionException e) {
+                    // FIXME: preferably the REPL should be killed here, but this leaves the
+                    // PolyglotEngine initialized and thus won't allow a new REPL session to run.
                     return Status.CANCEL_STATUS;
                 }
             }
