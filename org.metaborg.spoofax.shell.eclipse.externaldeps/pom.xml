@@ -58,11 +58,22 @@
             <artifactId>truffle-dsl-processor</artifactId>
             <version>0.11</version>
         </dependency>
+        <!-- simple lang -->
+        <dependency>
+            <groupId>org.metaborg</groupId>
+            <artifactId>sl.interpreter</artifactId>
+            <version>0.1</version>
+        </dependency>
 
         <!-- From here on, all dependencies are inherited. -->
         <dependency>
             <groupId>com.github.krukow</groupId>
             <artifactId>clj-ds</artifactId>
+        </dependency>
+        <!-- simple lang -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
         </dependency>
     </dependencies>
 
@@ -86,9 +97,11 @@
                         <!-- Embed dependencies into plugin bundle, so they are exportable. -->
                         <Embed-Dependency>
                             clj-ds,
+                            commons-io, <!-- simple lang -->
                             dynsem.lib.stratego.jar,
                             dynsem.lib.stratego.javastrat,
                             org.metaborg.meta.lang.dynsem.interpreter,
+                            sl.interpreter, <!-- simple lang -->
                             truffle-api,
                             truffle-dsl-processor,
                         </Embed-Dependency>
